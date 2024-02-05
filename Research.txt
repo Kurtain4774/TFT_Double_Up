@@ -1,0 +1,125 @@
+Project Details
+
+Purpose: This dynamic website should provide an easy way to view and compare double up stats. I want the website to compare not just one person’s comps but also their teammate’s comps to figure out what comps go well together.
+
+Why Use My Website: My website will include stats on your teammate’s comp going together with your comp unlike other stat checking sites that only have data on your own comp. The other sites are mainly targeted towards solo queue ranked and don’t display much information about double up.
+
+About Me: I have played TFT since set 6.5 (3 years) I have reached masters in solo queue since set 8.5 peaking GM 450 LP in set 8.5. Since then, I have focused more on double up reaching masters in double up every set since set 8.5 and peaking Challenger 500 LP in set 10 playing simultaneously on two accounts (Kurtain4774 #NA1 on my computer and Pandabear4774 #NA1 on my phone. 
+
+Project Motivation: On my climb, I consistently used sites like metaTFT and tactics.tools to find comps and choose items and augments. However, while these sites showed stats about individual comps, they never had stats about comps that would work well together such as summoner’s rift stats on the best duos. For example if both teammates played a 3 cost reroll comp, this might work better together since they are both rolling for eachother’s units and will hit faster than if they played completely different style comps. 
+
+Target Audience: My target audience is double up players who are competitive about the game and enjoy looking at statistics to get a tactical advantage over their opponents.
+
+Features Included: 
+
+Player info tab
+Data about current player similar to tactics.tools
+Dropdown to select different options to split stats by teammate
+TFT Info section
+Tables of information that is useful for players
+Team builder tab?
+Leaderboard tab
+Personal guide tab?
+Statistic tab of overall units, items, augments, etc
+Sort by double up, solo queue, hyper
+Composition tab of top comps this patch
+Sort within x Days
+Sort by patch
+
+
+Tech Stack:
+
+Frontend Resaerch
+React
+Good for reusing components
+Good for easy routing with ReactRouter
+Allows mixing js with html for easy logic
+Easy to learn since I have experience
+Faster development 
+Virtual DOM
+One-way data binding
+Declarative views
+Easier to debug
+Server side rendering
+Fast initial load
+Easier to implement 
+Ranks higher on google searches
+Can be used for static pages
+Angular
+Many features added onto plain javascript
+Uses typescript 
+Two-way data binding
+Dependency injection
+Virtual scrolling
+Built in libraries
+Good for reusing components
+Built for Dynamic Websites
+Client side rendering
+Slower initial load 
+Fast after initial load
+Less load on the server
+May need third party library? May be built into angular not sure
+Used for dynamic websites where information constantly changes
+Used for dynamic pages
+Vue
+Very easy to use
+Mainly for small projects
+
+
+
+Backend Research
+
+Node.js + Express
+
+Backend can access the database and send information to the frontend.
+
+
+
+API Research
+
+Can get a lot of summoner data by taking all challenger players and then expanding their games played to get other summoners
+
+
+Routes: 
+
+Regions: BR EUNE EUW JP KR LAN LAS NA OCE PH RU SG TH TR TW VN
+
+Home Route
+/
+
+Player Route
+/player/{region}/{playername}
+
+Info Tables Route
+/info/tables/
+
+About Me Route
+/about
+
+Leaderboard Route
+/leaderboard
+
+Leaderboard Route Region Specific
+/leaderboard/{region}
+
+Stats Route
+/stats/augments
+
+Stats Traits
+/stats/traits
+
+Stats Units
+/stats/units
+
+Stats Explorer?
+/stats/explorer
+
+Comps Route
+/comps/doubleup
+
+
+
+Database Info:
+
+I need to store data collected from games. 
+
