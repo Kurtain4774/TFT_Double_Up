@@ -1,0 +1,31 @@
+.container {
+    display: flex;
+    justify-content: center;
+    padding-top: 50px; /* Adjust this value as needed */
+  }
+  
+  .search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .region-select {
+    margin-right: 10px;
+    padding: 8px;
+    font-size: 16px;
+  }
+  
+  .text-input {
+    width: 300px;
+    padding: 10px 30px 10px 10px; /* Adjust padding to accommodate the icon */
+    font-size: 16px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+  }

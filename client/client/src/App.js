@@ -1,9 +1,11 @@
 import React from 'react'
 import { routes } from './routes';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-
+import NavBar from './components/nav_bar/navBar'
 const App = () => (
-  <BrowserRouter>
+
+<BrowserRouter>
+  <NavBar/>
   <Routes>
     {routes.map(route => (
       <Route

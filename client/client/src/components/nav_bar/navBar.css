@@ -1,0 +1,39 @@
+.navbar {
+    background-color: #333; /* Background color for the navbar */
+    display: flex;
+    justify-content: center; /* Center the navbar horizontally */
+    align-items: center;
+    padding: 10px 20px; /* Adjust padding as needed */
+}
+
+.menu-container {
+    flex-grow: 1;
+}
+
+.navBar {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center; /* Center the menu items horizontally */
+}
+
+.navBar li {
+    padding: 0 15px; /* Adjust spacing between menu items */
+}
+
+.navBar li a {
+    color: white;
+    text-decoration: none;
+    font-size: 30px;
+    transition: color 0.3s ease; /* Add smooth transition effect */
+}
+
+.navBar li a.active {
+    color: #ffcc00; /* Change color on hover */
+    text-decoration: underline;
+}
+
+.navBar li a:hover {
+    color: #ffcc00; /* Change color on hover */
+}
