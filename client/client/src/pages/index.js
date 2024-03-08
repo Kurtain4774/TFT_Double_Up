@@ -1,8 +1,6 @@
-export { default as aboutPage } from './about/about';
-export { default as compsPage } from './comps/comps';
-export { default as homePage } from './home/homepage';
-export { default as infoPage } from './info/info';
-export { default as leaderBoardPage } from './leaderboard/leaderboard';
-export { default as playerPage } from './player/player';
-export { default as statsPage } from './stats/stats';
-
+export { default as aboutPage } from './about/about.js';
+export { default as compsPage } from './comps/comps.js';
+export { default as homePage } from './home/homepage.js';
+export { default as leaderBoardPage } from './leaderboard/leaderboard.js';
+export { default as playerPage } from './player/player.js';
+export { default as statsPage } from './stats/stats.js';

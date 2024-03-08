@@ -1,8 +1,16 @@
-const express = require('express')
+const express = require('express');
+const cors = require('cors');
+
 const app = express()
 
-app.get("/api", (req, res) => {
-    res.json({"users": ["userOne", "userTwo", "userThree"]})
+app.use(cors());
+app.use(express.json());
+
+app.get("/player", (req, res) => {
+    username = req.query.username;
+    region = req.query.region;
+    
+    res.json({"data": [{username}, {region}, "userThree", "userFour"]})
 })
 
 app.listen(3001,() => {
