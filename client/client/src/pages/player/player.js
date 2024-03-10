@@ -1,7 +1,10 @@
 import React, {useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 const PlayerPage = () => {
+  const navigate = useNavigate();
+
   const { region, username } = useParams();
 
   const [userInfo, setUserInfo] = useState("");
@@ -10,11 +13,22 @@ const PlayerPage = () => {
   // [] it only executes this code once
   //not adding the [] executes this code on every re-render
   useEffect(() => {
-    fetch("http://localhost:3001/player?username=" + username + "&region=" + region)
-      .then((res) => res.json())
+    fetch("http://localhost:3001/player?username=" + username + "&region=" + region + "1")
+      .then((res) => {
+        console.log(res.ok);
+        
+        if(!res.ok){
+          console.log("no summoner found")
+
+          navigate("/");
+        }
+        return res.json();
+        
+      })
       .then((data) => {
-        setUserInfo(data.info);
-        console.log(userInfo);
+        console.log(data);
+        setUserInfo(data);
+        
       });
   }, []);
 
