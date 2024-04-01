@@ -38,7 +38,7 @@ const HomePage = () => {
   }
 
   return (
-    <div>
+    <div className="page">
       <div className="container">
         <div className="search-container">
           <select onChange = {regionChange} value={region} className="region-select">
@@ -55,9 +55,10 @@ const HomePage = () => {
           
         </div>
       </div>
-      <div>
+      <hr></hr>
+      <div className="table-div">
         Tables
-        <select>
+        <select id="table-select-id" className="table-select">
           {tables.map((table) => (
             <option key={table} value={table}>
               {table}

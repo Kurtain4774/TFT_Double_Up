@@ -22,7 +22,7 @@ const regions = [
 
 const leaderBoardPage = () => {
     return (
-        <div>
+        <div className="page">
             <h1>LeaderBoard Page</h1>
             <ul>
                 {regions.map((region) => (

@@ -4,7 +4,7 @@ import "./stats.css";
 
 const statsPage = () => {
   return (
-    <div>
+    <div className="page">
       <h1>Stats Page</h1>
       <ul>
         <li>

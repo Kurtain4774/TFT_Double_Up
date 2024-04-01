@@ -3,7 +3,7 @@ import './comps.css';
 
 const compsPage = () => {
     return (
-        <div>
+        <div className="page">
             <h1>Comps Page</h1>
             <p>Do later</p>
             {/* Add comp tables here*/}
