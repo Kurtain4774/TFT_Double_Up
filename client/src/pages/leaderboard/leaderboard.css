@@ -1,1 +1,59 @@
 @import "../css/pages.css";
+
+.page{
+    text-align: center;
+}
+h1{
+    padding: 50px;
+}
+
+.navbar-leaderboard {
+    display: flex;
+    justify-content: center; /* Center the navbar horizontally */
+    align-items: center;
+    padding: 10px 20px; /* Adjust padding as needed */
+}
+
+.menu-container {
+    flex-grow: 1;
+}
+
+.navbar-leaderboard {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center; /* Center the menu items horizontally */
+}
+
+.navbar-leaderboard li {
+    padding: 0 15px; /* Adjust spacing between menu items */
+}
+
+.navbar-leaderboard li a {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+    transition: color 0.3s ease; /* Add smooth transition effect */
+}
+
+.navbar-leaderboard li a.active {
+    color: #ffcc00; /* Change color on hover */
+    text-decoration: underline;
+}
+
+.navbar-leaderboard li a:hover {
+    color: #ffcc00; /* Change color on hover */
+}
+
+.leader-board-table{
+    width: 80%;
+    height: 80vh;
+    margin: 0 10% 0 10%;
+    padding-top: 20px;
+    background-color: #333;
+}
+
+hr{
+    margin: 20px;
+}
