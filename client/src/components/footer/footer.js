@@ -4,21 +4,21 @@ import { NavLink } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer>
-      <nav>
+    <footer class="footer">
+      <nav className="footer-nav">
         <div>
           <ul>
-            <li>
+            <li className="footer-link">
               <NavLink to="/policies/privacy">Privacy Policy</NavLink>
             </li>
-            <li>
+            <li className="footer-link">
               <NavLink to="/policies/terms-of-use">Terms of Use</NavLink>
             </li>
           </ul>
         </div>
       </nav>
 
-      <p id="copyright">
+      <p id="footer">
         © 2023-2024 TFT Solutions. TFT Solutions isn't endorsed by Riot Games
         and doesn't reflect the views or opinions of Riot Games or anyone
         officially involved in producing or managing Riot Games properties. Riot
