@@ -58,6 +58,25 @@ hr{
     margin: 20px;
 }
 
+table tr:nth-child(2){
+    counter-reset: rowNumber;
+  }
+  table tr {
+    counter-increment: rowNumber;
+  }
+  table tr td:first-child::before {
+    content: counter(rowNumber);
+    min-width: 0.5em;
+    margin-right: 0.1em;
+  }
+  tbody td, tbody th{
+    padding: 25px;
+  }
+  
+  tbody tr:nth-child(odd) {
+    background-color: #5a5a5b;
+    color: #fff;
+  }
 table{
     background-color: #333;
     width: 100%;

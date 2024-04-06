@@ -2,6 +2,7 @@ import { React, useState, useEffect} from "react";
 import "./leaderboard.css";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
 import Footer from "../../components/footer/footer.js";
+import LeaguePointsComponent from './PointsToRank';
 
 const regions = [
   "BR",
@@ -24,6 +25,11 @@ const regions = [
 
 const LeaderBoardPage = () => {
   const navigate = useNavigate();
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,      
+    maximumFractionDigits: 2,
+ });
 
   const { region = "NA" } = useParams();
 
@@ -72,14 +78,26 @@ const LeaderBoardPage = () => {
 
 
         <table>
-
+          <tbody>
+            
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>LP</th>
+          <th>Games</th>
+          <th>Top 4</th>
+        </tr>
       {leaderboardInfo.map((item) => (
         <tr>
-          <th>{item.summonerName}</th>
-          <th>{item.leaguePoints}</th>
+          <td></td>
+          <td>{item.summonerName}</td>
+          <LeaguePointsComponent leaguePoints={item.leaguePoints}></LeaguePointsComponent>
+          <td>{item.wins + item.losses}</td>
+          <td>{formatter.format(100 * item.wins / (item.wins + item.losses))}%</td>
         </tr>
       ))}
       
+      </tbody>
     </table>
       
     <footer className="footer">
