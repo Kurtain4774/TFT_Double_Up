@@ -81,6 +81,14 @@ table{
     background-color: #333;
     width: 100%;
 }
+td{
+    text-align: center;
+}
+img{
+    width: 40px;
+    height: 40px;
+    padding-right: 10px;
+}
 
 .footer, #footer{
     color: white;
