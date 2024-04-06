@@ -1,18 +1,18 @@
 @import "../css/pages.css";
 
-h1, p{
+.terms-of-use-div h1, .terms-of-use-div p{
     text-align: left;
     margin: 0px 100px 0px 100px;
     color: black;
 }
 
-h1{
+.terms-of-use-div h1{
     padding-top: 40px;
     padding-bottom: 30px;
     padding-left: 0px;
 }
 
-p{
+.terms-of-use-div p{
     padding-top: 0px;
     padding-bottom: 40px;
 }
