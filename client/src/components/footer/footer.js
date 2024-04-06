@@ -1,9 +1,12 @@
 import React from "react";
 import "./footer.css";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 const Footer = () => {
-  return (
+  const location = useLocation();
+  const isLeaderboardRoute = location.pathname === '/leader_board';
+
+  return !isLeaderboardRoute && (
     <footer className="footer">
       <nav className="footer-nav">
         <div>

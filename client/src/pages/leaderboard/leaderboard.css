@@ -57,3 +57,40 @@ h1{
 hr{
     margin: 20px;
 }
+
+table{
+    background-color: #333;
+    width: 100%;
+}
+
+.footer, #footer{
+    color: white;
+}
+
+.footer-link{
+    color: white;
+    list-style-type: none;
+    display: inline-block;
+    margin: 5px 20px 5px 20px;
+}
+.footer{
+position: relative;
+  left: 0;
+  bottom: 0;
+  
+  width: 100%;
+  color: white;
+  text-align: center;
+}
+
+#footer{
+    font-size: small;
+}
+.footer-nav{
+    text-align: center;
+}
+a:link{ text-decoration: none; }
+a:visited { text-decoration: none; color:white; }
+a:hover { text-decoration: none; color:white; }
+a:focus { text-decoration: none; color:white; }
+a:hover, a:active { text-decoration: none; color:white }

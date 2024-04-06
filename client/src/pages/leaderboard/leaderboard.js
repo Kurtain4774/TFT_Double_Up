@@ -1,7 +1,7 @@
-import React from "react";
+import { React, useState, useEffect} from "react";
 import "./leaderboard.css";
-import { NavLink } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import Footer from "../../components/footer/footer.js";
 
 const regions = [
   "BR",
@@ -23,9 +23,31 @@ const regions = [
 ];
 
 const LeaderBoardPage = () => {
+  const navigate = useNavigate();
+
   const { region = "NA" } = useParams();
 
-  console.log(region);
+  const [leaderboardInfo, setLeaderboardInfo] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:3001/leaderboard?region=" + region + "1")
+      .then((res) => {
+        console.log(res.ok);
+        
+        if(!res.ok){
+          console.log("no region data found")
+
+          navigate("/");
+        }
+        return res.json();
+        
+      })
+      .then((data) => {
+        console.log(data);
+        setLeaderboardInfo(data);
+      });
+  }, []);
+
   return (
     <div className="page">
       <h1>LeaderBoard</h1>
@@ -48,7 +70,40 @@ const LeaderBoardPage = () => {
           </div>
         </nav>
 
-        <p>Leaderboard table *TODO*</p>
+
+        <table>
+
+      {leaderboardInfo.map((item) => (
+        <tr>
+          <th>{item.summonerName}</th>
+          <th>{item.leaguePoints}</th>
+        </tr>
+      ))}
+      
+    </table>
+      
+    <footer className="footer">
+      <nav className="footer-nav">
+        <div>
+          <ul>
+            <li className="footer-link">
+              <NavLink to="/policies/privacy">Privacy Policy</NavLink>
+            </li>
+            <li className="footer-link">
+              <NavLink to="/policies/terms-of-use">Terms of Use</NavLink>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+      <p id="footer">
+        © 2023-2024 TFT Solutions. TFT Solutions isn't endorsed by Riot Games
+        and doesn't reflect the views or opinions of Riot Games or anyone
+        officially involved in producing or managing Riot Games properties. Riot
+        Games, and all associated properties are trademarks or registered
+        trademarks of Riot Games, Inc.
+      </p>
+    </footer>
       </div>
     </div>
   );

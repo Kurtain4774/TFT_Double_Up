@@ -4,7 +4,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import NavBar from "./components/nav_bar/navBar";
 import Footer from "./components/footer/footer.js";
 import './App.css';
-
 const App = () => (
   <BrowserRouter>
     <div className="flex-container">
