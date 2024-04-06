@@ -162,6 +162,7 @@ async function fetchLeaderboardByTier(tier,division,region){
 app.get("/leaderboard", async (req, res) => {
   const region = req.query.region;
 
+  console.log("REGION: " + region);
   const urls = [
       `https://${region}.api.riotgames.com/tft/league/v1/challenger?queue=RANKED_TFT_DOUBLE_UP&api_key=${process.env.RIOT_API_KEY}`,
       `https://${region}.api.riotgames.com/tft/league/v1/grandmaster?queue=RANKED_TFT_DOUBLE_UP&api_key=${process.env.RIOT_API_KEY}`,
@@ -175,7 +176,7 @@ app.get("/leaderboard", async (req, res) => {
       const data = await Promise.all(responses.map(response => response.json()));
       let allData = [...data[0].entries, ...data[1].entries, ...data[2].entries];
 
-      if (allData.length >= 1000) {
+      if (allData.length >= 500) {
           res.json(allData);
           return; // Return to prevent further execution
       }

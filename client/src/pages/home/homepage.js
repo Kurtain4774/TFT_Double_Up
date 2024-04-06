@@ -15,17 +15,17 @@ const tables = ["Augments", "Reroll", "Double Up", "Golden Egg"];
 const HomePage = () => {
   const navigate = useNavigate();
 
-  const [region, setRegion] = useState(regions[0])
+  const [region, setRegion] = useState(regions[7])
   const [username, setUsername] = useState("");
 
   const handleClick = () => {
-    navigate("/player/" + region.toLowerCase() + "/" + username.toLowerCase())
+    navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase())
   }
 
   const handleKeyPress = (event) => {
     if(event.keyCode === 13){
       setUsername(event.target.value);
-      navigate("/player/" + region.toLowerCase() + "/" + username.toLowerCase())
+      navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase())
     }
   }
 
