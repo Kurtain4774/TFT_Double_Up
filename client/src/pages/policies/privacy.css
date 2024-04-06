@@ -1,0 +1,29 @@
+@import "../css/pages.css";
+
+.privacy-div h1, .privacy-div p{
+    text-align: left;
+    margin: 0px 100px 0px 100px;
+    color: black;
+}
+
+.privacy-div h1{
+    padding-top: 40px;
+    padding-bottom: 30px;
+    padding-left: 0px;
+}
+
+.privacy-div p{
+    padding-top: 0px;
+    padding-bottom: 40px;
+}
+
+.wrapper{
+    background-color: rgb(33, 32, 32);
+}
+.privacy-div{
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+    margin-top: 100px;
+    background-color: white;
+}
