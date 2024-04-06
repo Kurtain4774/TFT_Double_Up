@@ -1,0 +1,18 @@
+.flex-container{
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+}
+
+.flex-container .row-header{
+    flex: 0 1 auto;
+}
+
+.flex-container .row-content{
+    flex: 1 1 auto;
+}
+
+.flex-container .row-footer{
+    flex: 0 1 40px;
+}
+

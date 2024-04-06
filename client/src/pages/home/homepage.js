@@ -55,7 +55,6 @@ const HomePage = () => {
           
         </div>
       </div>
-      <hr></hr>
       <div className="table-div">
         Tables
         <select id="table-select-id" className="table-select">

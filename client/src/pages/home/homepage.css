@@ -31,7 +31,11 @@
     margin: 100px 0px 100px 0px;
   }
 
+  /*
+  Fix this pls
+  */
   .table-div{
+    margin-top: 40px;
     text-align: center;
     width: 50%;
     right: 50%;

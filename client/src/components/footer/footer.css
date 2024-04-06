@@ -9,9 +9,10 @@
     margin: 5px 20px 5px 20px;
 }
 .footer{
-    position: fixed;
+/*position: absolute;
   left: 0;
   bottom: 0;
+  */
   width: 100%;
   color: white;
   text-align: center;
