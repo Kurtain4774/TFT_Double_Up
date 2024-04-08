@@ -1,0 +1,22 @@
+const mongoose = require("mongoose")
+
+const leaderboardEntree = new mongoose.Schema({
+    rank: Number,
+    summonerName: String,
+    topFourRate: Float32Array,
+    tier: String,
+    division: Number,
+    points: Number,
+    winRate: Float32Array,
+})
+
+const leaderboardSchema = new mongoose.Schema({
+    region: String,
+    data: leaderboardEntree,
+    updatedAt: {
+        type: Date,
+        default: () => Date.now(),
+    }
+})
+
+module.exports = mongoose.model("Leaderboard", leaderboardSchema)

@@ -1,11 +1,35 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const mongoose = require("mongoose")
+const Leaderboard = require("./leader-board-row")
 
+mongoose.connect("mongodb://localhost/testdb")
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+
+async function getLeaderboard(region){
+  return await Leaderboard.find({region: `${region}`});
+}
+
+async function sortLeaderboard(region){
+  await Leaderboard.find({region: `${region}`}).sort({"tier": 1, "division": 1, "points": -1})
+}
+
+async function updateLeaderboardRanks(region){
+  const leaderboard = getLeaderboard(region);
+
+  let i = 1;
+
+  while(i < leaderboard.length){
+    leaderboard[i].rank = i;
+  }
+
+  await leaderboard.save();
+}
 
 function getRegion(region){
   let routing = "";
