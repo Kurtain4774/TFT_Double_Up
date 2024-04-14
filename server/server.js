@@ -4,12 +4,35 @@ require("dotenv").config();
 const mongoose = require("mongoose")
 const Leaderboard = require("./leader-board-row")
 
-mongoose.connect("mongodb://localhost/testdb")
+const mongoURI = 'mongodb+srv://kmquant:Drobot11+@cluster0.vqo1fcm.mongodb.net/'
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => {
+        console.log('Connected successfully to MongoDB Atlas cluster');
+    })
+    .catch((err) => {
+        console.error('Error occurred while connecting to MongoDB Atlas cluster', err);
+    });
+
+
+async function testing(){
+  try {
+
+
+  } catch(e){
+    console.log(e.message);
+  }
+}
+app.get("/", (req, res) => {
+  testing();
+
+  return res.json("hi")
+});
 
 async function getLeaderboard(region){
   return await Leaderboard.find({region: `${region}`});

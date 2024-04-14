@@ -3,11 +3,11 @@ const mongoose = require("mongoose")
 const leaderboardEntree = new mongoose.Schema({
     rank: Number,
     summonerName: String,
-    topFourRate: Float32Array,
+    topFourRate: Number,
     tier: String,
     division: Number,
     points: Number,
-    winRate: Float32Array,
+    winRate: Number,
 })
 
 const leaderboardSchema = new mongoose.Schema({
