@@ -11,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 
+
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('Connected successfully to MongoDB Atlas cluster');
@@ -19,19 +20,49 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
         console.error('Error occurred while connecting to MongoDB Atlas cluster', err);
     });
 
+    const regions = [
+      "BR1",
+      "EUN1",
+      "EUW1",
+      "JP1",
+      "KR",
+      "LA1",
+      "LA2",
+      "NA1",
+      "OCE1",
+      "PH2",
+      "RU",
+      "SG2",
+      "TH2",
+      "TR1",
+      "TW2",
+      "VN2",
+    ];
 
-async function testing(){
+async function addRegions(){
   try {
-    
+    await Region.deleteMany({});
 
+    for(const region of regions){
+      await Region.create({
+        name: region,
+      })
+    }
+
+    return Region.find({});
   } catch(e){
     console.log(e.message);
   }
-}
-app.get("/", (req, res) => {
-  testing();
 
-  return res.json("hi")
+}
+app.get("/", async (req, res) => {
+  try{
+    
+  }catch(e){
+    console.log(e.message);
+  }
+
+  
 });
 
 async function getLeaderboard(region){
