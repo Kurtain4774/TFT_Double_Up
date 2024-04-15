@@ -1,10 +1,10 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const mongoose = require("mongoose")
-const Leaderboard = require("./leader-board-row")
-
-const mongoURI = 'mongodb+srv://kmquant:Drobot11+@cluster0.vqo1fcm.mongodb.net/'
+const mongoose = require("mongoose");
+const Leaderboard = require("./leader-board-row");
+const Region = require("./region");
+const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.vqo1fcm.mongodb.net/`;
 const app = express();
 
 app.use(cors());
@@ -22,7 +22,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 async function testing(){
   try {
-
+    
 
   } catch(e){
     console.log(e.message);

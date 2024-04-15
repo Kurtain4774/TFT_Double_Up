@@ -11,7 +11,10 @@ const leaderboardEntree = new mongoose.Schema({
 })
 
 const leaderboardSchema = new mongoose.Schema({
-    region: String,
+    region: {
+        type: String,
+        unique: true,
+    },
     data: leaderboardEntree,
     updatedAt: {
         type: Date,
