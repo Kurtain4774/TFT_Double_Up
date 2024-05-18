@@ -3,9 +3,31 @@ import "./footer.css";
 import { NavLink, useLocation } from "react-router-dom";
 
 const Footer = () => {
-  const location = useLocation();
-  const isLeaderboardRoute = location.pathname === '/leader_board';
 
+  function removeAfterSecondSlash(str) {
+    // Match everything before the second "/"
+    const result = str.match(/(.*?\/.*?\/).*$/);
+    
+    // If there's a match, return the part before the second "/"
+    // Otherwise, return the original string
+    if (result) {
+      // Extract the part before the second "/"
+      const partBeforeSecondSlash = result[1];
+      // Split the string by "/" to get individual parts
+      const parts = partBeforeSecondSlash.split('/');
+      // Return the first two parts joined back with "/"
+      return parts.slice(0, 2).join('/');
+    } else {
+      return str;
+    }
+  }
+
+
+  const location = useLocation();
+
+  var path = removeAfterSecondSlash(location.pathname);
+
+  const isLeaderboardRoute = path === '/leader_board';
   return !isLeaderboardRoute && (
     <footer className="footer">
       <nav className="footer-nav">

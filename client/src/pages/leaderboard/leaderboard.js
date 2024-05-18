@@ -63,6 +63,12 @@ function getRiotRegion(region) {
 }
 
 const LeaderBoardPage = () => {
+
+  function sortByAgeDescending(data) {
+    return data.sort((a, b) => b.leaguePoints - a.leaguePoints);
+  }
+
+
   const navigate = useNavigate();
 
   const formatter = new Intl.NumberFormat("en-US", {
@@ -90,7 +96,9 @@ const LeaderBoardPage = () => {
       })
       .then((data) => {
         //console.log(data);
-        setLeaderboardInfo(data);
+        const sortedData = sortByAgeDescending(data);
+
+        setLeaderboardInfo(sortedData);
       });
   }, [region]);
 

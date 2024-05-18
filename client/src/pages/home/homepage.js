@@ -17,15 +17,34 @@ const HomePage = () => {
 
   const [region, setRegion] = useState(regions[7])
   const [username, setUsername] = useState("");
+  const [username2, setUsername2] = useState("");
 
   const handleClick = () => {
-    navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase())
+    nav();
+  }
+
+  function nav(){
+    if(username === ""){
+      return false;
+    } else if(username2 === ""){
+      navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase())
+    } else {
+      navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase() + "/" + username2.toLowerCase())
+    }
+  
   }
 
   const handleKeyPress = (event) => {
     if(event.keyCode === 13){
       setUsername(event.target.value);
-      navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase())
+      nav();
+    }
+  }
+
+  const handleKeyPress2 = (event) => {
+    if(event.keyCode === 13){
+      setUsername2(event.target.value);
+      nav();
     }
   }
 
@@ -35,6 +54,10 @@ const HomePage = () => {
 
   const usernameChange = event => {
     setUsername(event.target.value);
+  }
+
+  const usernameChange2 = event => {
+    setUsername2(event.target.value);
   }
 
   return (
@@ -49,12 +72,15 @@ const HomePage = () => {
             ))}
           </select>
           <form>
-            <input type="text" className="text-input" placeholder="Search..." onKeyDown = {handleKeyPress} onChange={usernameChange} value={username}  />
-            <FontAwesomeIcon onClick = {handleClick} icon={faSearch} className="search-icon" />
+            <input type="text" className="text-input" placeholder="Search a RiotID #Tagline" onKeyDown = {handleKeyPress} onChange={usernameChange} value={username}  />
+            <input type="text" className="text-input" placeholder="Double up teammate RiotID #Tagline" onKeyDown = {handleKeyPress2} onChange={usernameChange2} value={username2}  />
+            <input type="submit" className="text-submit" onClick = {handleClick}/>
           </form>
           
         </div>
       </div>
+          
+      {/*
       <div className="table-div">
         Tables
         <select id="table-select-id" className="table-select">
@@ -64,8 +90,10 @@ const HomePage = () => {
             </option>
           ))}
         </select>
-        {/* Add the Tables Here*/}
+        { Add the Tables Here}
       </div>
+      */}
+      
     </div>
   );
 };

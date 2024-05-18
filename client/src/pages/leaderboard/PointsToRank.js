@@ -5,9 +5,9 @@ import imgMaster from '../../images/ranks/TFT_Regalia_Master.png';
 function LeaguePointsComponent({ leaguePoints }) {
   let imageSource;
   
-  if (leaguePoints > 500) {
+  if (leaguePoints >= 500) {
     imageSource = imgChal;
-  } else if (leaguePoints > 200) {
+  } else if (leaguePoints >= 200) {
     imageSource = imgGM;
   } else {
     imageSource = imgMaster;
