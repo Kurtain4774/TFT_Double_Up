@@ -50,7 +50,7 @@ const DoubleUpPage = () => {
 
   const { region, username, username2 } = useParams();
 
-  const [userInfo, setUserInfo] = useState("");
+  const [userInfo, setUserInfo] = useState([]);
 
   //the [] executes the code whenever that variable changes so since there is no var inside
   // [] it only executes this code once
@@ -69,7 +69,7 @@ const DoubleUpPage = () => {
         
       })
       .then((data) => {
-        //console.log(data);
+        console.log(data);
         setUserInfo(data);
         
       });
@@ -82,6 +82,11 @@ const DoubleUpPage = () => {
         {region} {username} {username2}
       </p>
 
+      <ul>
+        {userInfo.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
     </div>
   );
 };

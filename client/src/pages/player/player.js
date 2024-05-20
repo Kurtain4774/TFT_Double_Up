@@ -50,7 +50,7 @@ const PlayerPage = () => {
 
   const { region, username } = useParams();
 
-  const [userInfo, setUserInfo] = useState("");
+  const [userInfo, setUserInfo] = useState([]);
 
   //the [] executes the code whenever that variable changes so since there is no var inside
   // [] it only executes this code once

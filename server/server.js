@@ -114,19 +114,80 @@ function getRegion(region) {
   }
 }
 
-app.get("/player", (req, res) => {
-  const username = req.query.username;
+app.get("/player", async (req, res) => {
+  const username = req.query.username.split(',');
   const region = req.query.region;
-  const username2 = req.query.username2;
-
-  console.log(username);
-  console.log(username2);
-  console.log(region);
-
-  var puuid = "";
   
+  var username2 = [];
+  if(Object.keys(req.query).length === 3){
+    username2 = req.query.username2.split(',');
+  }
+  
+  
+  
+
+  var user1apicalls = [];
+  var user2apicalls = [];
+
+  for(let i = 0; i < username.length; i++){
+    user1apicalls.push(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username[i]}/${region}?api_key=${process.env.RIOT_API_KEY}`)
+
+  }
+
+  for(let i = 0; i < username2.length; i++){
+    user2apicalls.push(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username2[i]}/${region}?api_key=${process.env.RIOT_API_KEY}`)
+
+  }
+  
+  var user1puuid = [];
+  var user2puuid = [];
+
+
+  const fetchPromises = user1apicalls.map((url) => fetch(url));
+
+
+  try {
+    const responses = await Promise.all(fetchPromises);
+    const data = await Promise.all(
+      responses.map((response) => response.json())
+    );
+    console.log(data);
+    
+    for(let i = 0; i < data.length; i++){
+      user1puuid.push(data[i].puuid);
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({
+      message: "Could not find summoner data",
+    });
+  }
+
+  let allData2 = []
+
+  if(user2apicalls.length > 0){
+    const fetchPromises2 = user2apicalls.map((url) => fetch(url));
+
+    try {
+      const responses = await Promise.all(fetchPromises2);
+      const data = await Promise.all(
+        responses.map((response) => response.json())
+      );
+
+      
+      for(let i = 0; i < data.length; i++){
+        user2puuid.push(data[i].puuid);
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(400).send({
+        message: "Could not find summoner data",
+      });
+    }
+  }
+  console.log("PUUID: " + user1puuid[0]);
   fetch(
-    `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username}/${region}?api_key=${process.env.RIOT_API_KEY}`,
+    `https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${user1puuid[0]}/ids?start=0&count=20&api_key=${process.env.RIOT_API_KEY}`,
     {
       method: "GET",
       mode: "cors",
@@ -139,31 +200,7 @@ app.get("/player", (req, res) => {
       return response.json();
     })
     .then((data) => {
-      puuid = data.puuid;
-
-
-      fetch(
-        `https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${puuid}/ids?start=0&count=20&api_key=${process.env.RIOT_API_KEY}`,
-        {
-          method: "GET",
-          mode: "cors",
-        }
-      )
-        .then((response) => {
-          if (!response.ok) {
-            res.status(400);
-          }
-          return response.json();
-        })
-        .then((data) => {
-          res.json(data);
-        })
-        .catch((error) => {
-          console.error(error);
-          res.status(400).send({
-            message: "Could not find summoner data",
-          });
-        });
+      res.json(data);
     })
     .catch((error) => {
       console.error(error);
