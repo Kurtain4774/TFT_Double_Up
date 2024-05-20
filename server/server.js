@@ -1,15 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const mongoose = require("mongoose");
-const Leaderboard = require("./leader-board-row");
-const Region = require("./region");
-const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.vqo1fcm.mongodb.net/`;
+//const mongoose = require("mongoose");
+//const Leaderboard = require("./leader-board-row");
+//const Region = require("./region");
+//const mongoURI = `mongodb+srv://${process.env.MONGODB_USERNAME}:${process.env.MONGODB_PASSWORD}@cluster0.vqo1fcm.mongodb.net/`;
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+/*
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
@@ -21,7 +22,7 @@ mongoose
       err
     );
   });
-
+*/
 const regions = [
   "BR1",
   "EUN1",
@@ -116,9 +117,16 @@ function getRegion(region) {
 app.get("/player", (req, res) => {
   const username = req.query.username;
   const region = req.query.region;
+  const username2 = req.query.username2;
 
+  console.log(username);
+  console.log(username2);
+  console.log(region);
+
+  var puuid = "";
+  
   fetch(
-    `https://${region}.api.riotgames.com/tft/summoner/v1/summoners/by-name/${username}?api_key=${process.env.RIOT_API_KEY}`,
+    `https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username}/${region}?api_key=${process.env.RIOT_API_KEY}`,
     {
       method: "GET",
       mode: "cors",
@@ -131,7 +139,31 @@ app.get("/player", (req, res) => {
       return response.json();
     })
     .then((data) => {
-      res.json(data);
+      puuid = data.puuid;
+
+
+      fetch(
+        `https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${puuid}/ids?start=0&count=20&api_key=${process.env.RIOT_API_KEY}`,
+        {
+          method: "GET",
+          mode: "cors",
+        }
+      )
+        .then((response) => {
+          if (!response.ok) {
+            res.status(400);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          res.json(data);
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(400).send({
+            message: "Could not find summoner data",
+          });
+        });
     })
     .catch((error) => {
       console.error(error);
@@ -139,6 +171,7 @@ app.get("/player", (req, res) => {
         message: "Could not find summoner data",
       });
     });
+    
 });
 
 app.get("/player/matches", (req, res) => {
@@ -272,9 +305,9 @@ app.get("/leaderboard", async (req, res) => {
     const data = await Promise.all(
       responses.map((response) => response.json())
     );
+    console.log(data);
     let allData = [...data[0].entries];
 
-    console.log(allData);
     if (allData.length >= 0) {
       for (let i = 0; i < allData.length; i++) {
           const summonerId = allData[i].summonerId;

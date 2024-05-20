@@ -82,6 +82,12 @@ const PlayerPage = () => {
         {region} {username}
       </p>
 
+      <ul>
+        {userInfo.map((r) => (
+          <li key={r}>{r}</li>
+        ))}
+      </ul>
+
     </div>
   );
 };

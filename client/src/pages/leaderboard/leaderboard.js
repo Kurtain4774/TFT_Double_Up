@@ -64,9 +64,7 @@ function getRiotRegion(region) {
 
 const LeaderBoardPage = () => {
 
-  function sortByAgeDescending(data) {
-    return data.sort((a, b) => b.leaguePoints - a.leaguePoints);
-  }
+  
 
 
   const navigate = useNavigate();
@@ -96,6 +94,9 @@ const LeaderBoardPage = () => {
       })
       .then((data) => {
         //console.log(data);
+        function sortByAgeDescending(data) {
+          return data.sort((a, b) => b.leaguePoints - a.leaguePoints);
+        }
         const sortedData = sortByAgeDescending(data);
 
         setLeaderboardInfo(sortedData);
