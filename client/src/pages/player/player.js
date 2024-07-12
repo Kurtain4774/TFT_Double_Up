@@ -56,6 +56,7 @@ const PlayerPage = () => {
   // [] it only executes this code once
   //not adding the [] executes this code on every re-render
   useEffect(() => {
+    console.log("username: " + username);
     fetch("http://localhost:3001/player?username=" + username + "&region=" + getRiotRegion(region))
       .then((res) => {
         //console.log(res.ok);
@@ -81,6 +82,8 @@ const PlayerPage = () => {
       <p>
         {region} {username}
       </p>
+{
+  /*
 
       <ul>
         {userInfo.map((r) => (
@@ -88,6 +91,7 @@ const PlayerPage = () => {
         ))}
       </ul>
 
+*/}
     </div>
   );
 };

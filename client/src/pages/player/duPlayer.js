@@ -1,7 +1,7 @@
 import React, {useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
-
+import './duPlayer.css';
 
 function getRiotRegion(region) {
   //console.log(region);
@@ -48,15 +48,46 @@ const DoubleUpPage = () => {
   
   const navigate = useNavigate();
 
-  const { region, username, username2 } = useParams();
+  const { region, username, tag, username2, tag2 } = useParams();
 
-  const [userInfo, setUserInfo] = useState([]);
+  const [userInfo1, setUserInfo1] = useState([]);
+  const [userInfo2, setUserInfo2] = useState([]);
+
+  const [sameGameIds, setSameGameIds] = useState([]);
+
+  const findCommonIds = (data) => {
+    // Assuming data is a 2D array with at least 2 columns
+    
+    const set1 = new Set(data[0]);
+    const set2 = new Set(data[1]);
+    
+    console.log("set1: " + data[0].length);
+    // Find intersection of IDs appearing in both sets
+    const commonIds = [...set1].filter(id => set2.has(id));
+  
+    return commonIds;
+  };
 
   //the [] executes the code whenever that variable changes so since there is no var inside
   // [] it only executes this code once
   //not adding the [] executes this code on every re-render
   useEffect(() => {
-    fetch("http://localhost:3001/player?username=" + username + "&username2=" + username2 + "&region=" + getRiotRegion(region))
+    console.log("username: " + username);
+    console.log("tag: " + tag);
+    console.log("username: " + username2);
+    console.log("tag: " + tag2);
+
+    let t = tag;
+    let t2 = tag2;
+    if(t === undefined){
+      t = "NA1";
+    }
+
+    if(t2 === undefined){
+      t2 = "NA1";
+    }
+    
+    fetch("http://localhost:3001/player?username=" + username + "&tag=" + t + "&username2=" + username2 + "&tag2=" + t2 + "&region=" + getRiotRegion(region))
       .then((res) => {
         //console.log(res.ok);
         
@@ -69,24 +100,47 @@ const DoubleUpPage = () => {
         
       })
       .then((data) => {
-        console.log(data);
-        setUserInfo(data);
-        
+        setUserInfo1(data[0]);
+        setUserInfo2(data[1]);
+
+        setSameGameIds(findCommonIds(data));
       });
+      
   }, []);
+  
+  const maxLength = Math.max(userInfo1.length, userInfo2.length);
+
 
   return (
     <div>
       <h1>Double Up Page</h1>
       <p>
-        {region} {username} {username2}
+        {region}
       </p>
-
       <ul>
-        {userInfo.map((r) => (
-          <li key={r}>{r}</li>
+        {sameGameIds.map((item, index) => (
+          <li key={item}>{item}</li>
         ))}
       </ul>
+
+      <h2>Match ID Table</h2>
+      <table>
+      <thead>
+        <tr>
+          <th>Column 1</th>
+          <th>Column 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        {/* Loop through the arrays using the longest length */}
+        {[...Array(maxLength)].map((_, index) => (
+          <tr key={index}>
+            <td>{userInfo1[index] || ''}</td>
+            <td>{userInfo2[index] || ''}</td>
+          </tr>
+        ))}
+      </tbody>
+      </table>
     </div>
   );
 };

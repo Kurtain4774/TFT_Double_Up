@@ -1,0 +1,5 @@
+table tr td:first-child::before {
+    content: "";
+    min-width: 0.5em;
+    margin-right: 0.1em;
+  }

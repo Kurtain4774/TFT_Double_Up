@@ -24,13 +24,29 @@ const HomePage = () => {
   }
 
   function nav(){
-    if(username === ""){
-      return false;
-    } else if(username2 === ""){
-      navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase())
+    console.log(username);
+    console.log(username2);
+
+    let path = "/player/" + region.toUpperCase() + "/";
+
+    let name1 = username.split('#');
+
+    if(name1.length === 1){
+      path = path + username + "/NA1/";
     } else {
-      navigate("/player/" + region.toUpperCase() + "/" + username.toLowerCase() + "/" + username2.toLowerCase())
+      path = path + name1[0] + "/" + name1[1] + "/";
     }
+
+    let name2 = username2.split('#');
+
+    if(name2.length === 1){
+      path = path + username2 + "/NA1/";
+    } else {
+      path = path + name2[0] + "/" + name2[1] + "/";
+    }
+
+
+    navigate(path);
   
   }
 
