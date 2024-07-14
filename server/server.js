@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const playerRoutes = require('./routes/playerRoute');
+
 require("dotenv").config();
 //const mongoose = require("mongoose");
 //const Leaderboard = require("./leader-board-row");
@@ -10,6 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/player', playerRoutes);
 /*
 mongoose
   .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -114,68 +117,8 @@ function getRegion(region) {
   }
 }
 
-app.get("/player", async (req, res) => {
-  const username = req.query.username;
-  const tag = req.query.tag;
-
-  const region = req.query.region;
-  
-  var username2 = req.query.username2;
-  var tag2 = req.query.tag2;
-
-  console.log("Parameters: " + username + "#" + tag + " " + username2 + "#" + tag2);
-
-  let puuidArray = [];
-  let usernameArray = [[username,tag], [username2,tag2]];
-
-  let promisesArray1 = usernameArray.map(async function(username){
-    const response = await fetch(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username[0]}/${username[1]}?api_key=${process.env.RIOT_API_KEY}`);
-    const json = await response.json();
-    puuidArray.push(json.puuid);
-  });
-
-  await Promise.all(promisesArray1);
-
-  let matchIDs = [];
-
-  let promisesArray = puuidArray.map(async function(id){
-    const response = await fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${id}/ids?start=0&count=1000&api_key=${process.env.RIOT_API_KEY}`);
-    const json = await response.json();
-    matchIDs.push(json);
-  });
-      
-  await Promise.all(promisesArray);
-  res.send(matchIDs);
-  return;
-});
 
 
-
-app.get("/player/matches", (req, res) => {
-  const puuid = req.query.puuid;
-  const region = req.query.region;
-  const start = req.query.start;
-
-  let routing = getRegion(region);
-
-  fetch(
-    `https://${routing}.api.riotgames.com/tft/match/v1/matches/by-puuid/${puuid}?api_key=${process.env.RIOT_API_KEY}`,
-    {
-      method: "GET",
-      mode: "cors",
-    }
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      res.json(data);
-    })
-    .catch((error) => {
-      console.error(error);
-      res.status(400).send({
-        message: "Could not find summoner data",
-      });
-    });
-});
 
 async function fetchLeaderboardByTier(tier, division, region) {
   tierString = "";
@@ -263,6 +206,7 @@ async function fetchSummonerName(summonerId, region) {
 }
 
 app.get("/leaderboard", async (req, res) => {
+  /*
   const region = req.query.region;
 
   console.log("REGION: " + region);
@@ -294,8 +238,8 @@ app.get("/leaderboard", async (req, res) => {
       res.json(allData);
       return; // Return to prevent further execution
     }
-
-    /*
+    
+    
     let tier = 0;
     let division = 1;
     while (allData.length < 500) {
@@ -315,13 +259,14 @@ app.get("/leaderboard", async (req, res) => {
     }
     console.log(allData);
     res.json(allData);
-    */
+    
   } catch (error) {
     console.error(error);
     res.status(400).send({
       message: "Could not find summoner data",
     });
   }
+  */
 });
 app.listen(3001, () => {
   console.log("Server started at port 3001");

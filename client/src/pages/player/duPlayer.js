@@ -1,6 +1,7 @@
 import React, {useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
+import { Bar } from 'react-chartjs-2';
 import './duPlayer.css';
 
 function getRiotRegion(region) {
@@ -53,20 +54,11 @@ const DoubleUpPage = () => {
   const [userInfo1, setUserInfo1] = useState([]);
   const [userInfo2, setUserInfo2] = useState([]);
 
+  const [duoStats, setDuoStats] = useState([]);
+
   const [sameGameIds, setSameGameIds] = useState([]);
 
-  const findCommonIds = (data) => {
-    // Assuming data is a 2D array with at least 2 columns
-    
-    const set1 = new Set(data[0]);
-    const set2 = new Set(data[1]);
-    
-    console.log("set1: " + data[0].length);
-    // Find intersection of IDs appearing in both sets
-    const commonIds = [...set1].filter(id => set2.has(id));
-  
-    return commonIds;
-  };
+  const [placementCounter, setPlacementCounter] = useState([]);
 
   //the [] executes the code whenever that variable changes so since there is no var inside
   // [] it only executes this code once
@@ -103,13 +95,42 @@ const DoubleUpPage = () => {
         setUserInfo1(data[0]);
         setUserInfo2(data[1]);
 
-        setSameGameIds(findCommonIds(data));
+        const totalGames = data.length-3;
+    
+        let totalPlacement = 0;
+        let player1Damage = 0;
+        let player2Damage = 0;
+        let matchIDs = [];
+
+        for(let i = 2; i < data.length - 1; i++){
+          let stats = data[i];
+          totalPlacement += stats[0];
+          player1Damage += stats[1];
+          player2Damage += stats[2];
+          matchIDs.push(stats[3]);
+        }
+
+        totalPlacement /= totalGames;
+        player1Damage /= totalGames;
+        player2Damage /= totalGames;
+
+        
+
+        let duoStats = [];
+        duoStats.push({label: "Total Games", value: totalGames});
+        duoStats.push({label: "Avg Place", value: totalPlacement});
+        duoStats.push({label: username + " Avg. Damage", value: player1Damage});
+        duoStats.push({label: username2 + " Avg. Games", value: player2Damage});
+
+        setDuoStats(duoStats);
+        setPlacementCounter(data[data.length - 1]);
+
+
+        setSameGameIds(matchIDs);
       });
       
   }, []);
   
-  const maxLength = Math.max(userInfo1.length, userInfo2.length);
-
 
   return (
     <div>
@@ -117,30 +138,35 @@ const DoubleUpPage = () => {
       <p>
         {region}
       </p>
-      <ul>
-        {sameGameIds.map((item, index) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-
-      <h2>Match ID Table</h2>
-      <table>
-      <thead>
-        <tr>
-          <th>Column 1</th>
-          <th>Column 2</th>
-        </tr>
-      </thead>
-      <tbody>
-        {/* Loop through the arrays using the longest length */}
-        {[...Array(maxLength)].map((_, index) => (
-          <tr key={index}>
-            <td>{userInfo1[index] || ''}</td>
-            <td>{userInfo2[index] || ''}</td>
-          </tr>
-        ))}
-      </tbody>
-      </table>
+      <div className="container">
+        <div className="stats-box">
+          {duoStats.map((stat, index) => (
+            <div key={index} className="stat">
+              <div className="label">{stat.label}</div>
+              <div className="value">{stat.value}</div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="table-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Match ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sameGameIds.map((item) => (
+                <tr key={item}>
+                  <td></td>
+                  <td>{item}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };

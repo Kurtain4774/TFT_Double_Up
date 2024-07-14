@@ -1,5 +1,67 @@
-table tr td:first-child::before {
-    content: "";
-    min-width: 0.5em;
-    margin-right: 0.1em;
+
+
+  body {
+    margin: 0;
+    background-color: rgb(33, 32, 32);
+    color: #ffffff;
+  }
+  
+  .container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .stats-box {
+    width: 20%;
+    height: 50vh;
+    padding: 10px;
+    background-color: rgb(50, 50, 50);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .stat {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: rgb(75, 75, 75);
+    border: 1px solid rgb(100, 100, 100);
+  }
+  
+  .label {
+    font-weight: bold;
+  }
+  
+  .table-box {
+    width: 80%;
+    padding: 10px;
+    background-color: rgb(33, 32, 32);
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgb(50, 50, 50);
+    color: #ffffff;
+  }
+  
+  table, th, td {
+    border: 1px solid rgb(100, 100, 100);
+  }
+  
+  th, td {
+    padding: 8px;
+    text-align: left;
+  }
+  
+  button {
+    padding: 10px;
+    margin-top: 10px;
+    background-color: rgb(75, 75, 75);
+    color: #ffffff;
+    border: 1px solid rgb(100, 100, 100);
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: rgb(100, 100, 100);
   }
