@@ -1,21 +1,25 @@
 const Bottleneck = require("bottleneck");
+const { connectToMongoDB, insertPlayer, findPlayer } = require('../database/player-db');
 
 const limiterPerSecond = new Bottleneck({
-  reservoir: 20,          // Maximum number of requests
-  reservoirRefreshAmount: 20,
-  reservoirRefreshInterval: 1000, // 1000 ms = 1 second
   maxConcurrent: 1,
+  minTime: 50,
+  reservoir: 20,
+  reservoirRefreshInterval: 1000,
+  reservoirRefreshAmount: 20
 });
 
 // Bottleneck for 100 requests per 2 minutes
 const limiterPerTwoMinutes = new Bottleneck({
-  reservoir: 100,                  // Maximum number of requests
-  reservoirRefreshAmount: 100,
-  reservoirRefreshInterval: 2 * 60 * 1000, // 2 minutes in milliseconds
   maxConcurrent: 1,
+  minTime: 50,
+  reservoir: 100,
+  reservoirRefreshInterval: 120000,
+  reservoirRefreshAmount: 100
 });
 
 limiterPerSecond.chain(limiterPerTwoMinutes)
+
 
 const getMatches = async (req, res) => {
     const username1 = req.query.username;
@@ -23,6 +27,9 @@ const getMatches = async (req, res) => {
     const username2 = req.query.username2;
     const tag2 = req.query.tag2;
     const region = req.query.region;
+
+    //check to see if we already have this player in the database
+    await connectToMongoDB();
 
     console.log("Parameters: " + username1 + "#" + tag1 + " " + username2 + "#" + tag2);
 
@@ -46,7 +53,7 @@ const getMatches = async (req, res) => {
     //array of stats containing [placement,player1damage,player2damage,matchID]
     const doubleUpMatchStats = await fetchDoubleUpMatchIDs(commonIds, puuidArray);
 
-    console.log("Total Double Up Games: " + doubleUpMatchStats.length);
+    console.log("Total Double Up Games: " + doubleUpMatchStats.length - 1);
 
     res.send([...matchIDs, ...doubleUpMatchStats]);
 
@@ -64,24 +71,24 @@ const getMatches = async (req, res) => {
     return json.puuid;
   }
 
+  
+
   async function fetchMatchIDs(puuidArray) {
     const matchIDs = [new Set(), new Set()];
-    const startTime = 1710957600;
+    const startTime = 1710892800;
     let start = 0;
-  
+    
     do {
       await Promise.all(puuidArray.map(async (id, index) => {
-        await limiterPerSecond.schedule(async () => {
-          const response = await fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${id}/ids?start=${start}&startTime=${startTime}&count=200&api_key=${process.env.RIOT_API_KEY}`);
-          const json = await response.json();
-          if(json){
-            const set = new Set(json);
-            set.forEach(match => matchIDs[index].add(match));
-          } else {
-            console.log("failed");
-          }
+        const response = await limiterPerSecond.schedule(() => fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${id}/ids?start=${start}&startTime=${startTime}&count=200&api_key=${process.env.RIOT_API_KEY}`));
+        const json = await response.json();
+        if(json){
+          const set = new Set(json);
+          set.forEach(match => matchIDs[index].add(match));
+        } else {
+          console.log("failed");
+        }
           
-        });
       }));
   
       start += 200;
@@ -100,25 +107,14 @@ const getMatches = async (req, res) => {
   async function fetchDoubleUpMatchIDs(commonIds, puuidArray) {
     const doubleUpMatchIDs = [];
     const placementCounts = [0,0,0,0];
-
-    let jsonData = []
-    let matchIDs = []
   
     await Promise.all(commonIds.map(async (matchID) => {
-      await limiterPerSecond.schedule(async () => {
-        const response = await fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/${matchID}?api_key=${process.env.RIOT_API_KEY}`);
-        const json = await response.json();
-        
-        const info = json.info;
-        matchIDs.push(matchID);
-        jsonData.push(info);
-        
-      });
-    }));
+      const response = await limiterPerSecond.schedule(() => fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/${matchID}?api_key=${process.env.RIOT_API_KEY}`));
+      const json = await response.json();
 
-    for(let i = 0; i < jsonData.length; i++){
-      let info = jsonData[i];
-      if (info && info.queueId === 1160) {
+      const info = json.info;
+      
+      if (info && info.queue_id === 1160) {
         const participants = info.participants;
         let player1Data;
         let player2Data;
@@ -137,13 +133,14 @@ const getMatches = async (req, res) => {
           stats.push(placement);
           stats.push(player1Data.total_damage_to_players);
           stats.push(player2Data.total_damage_to_players);
-          stats.push(matchIDs[i]);
+          stats.push(matchID);
           doubleUpMatchIDs.push(stats);
         }
       } else {
-        console.log("skipped");
+        console.log("skipped: " + matchID);
       }
-    }
+    }));
+
     doubleUpMatchIDs.push(placementCounts);
     return doubleUpMatchIDs;
   }

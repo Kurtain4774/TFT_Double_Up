@@ -1,6 +1,5 @@
 import React, {useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useParams } from "react-router-dom";
 import { Bar } from 'react-chartjs-2';
 import './duPlayer.css';
 
@@ -135,9 +134,6 @@ const DoubleUpPage = () => {
   return (
     <div>
       <h1>Double Up Page</h1>
-      <p>
-        {region}
-      </p>
       <div className="container">
         <div className="stats-box">
           {duoStats.map((stat, index) => (
@@ -167,6 +163,8 @@ const DoubleUpPage = () => {
           </table>
         </div>
       </div>
+
+      
     </div>
   );
 };

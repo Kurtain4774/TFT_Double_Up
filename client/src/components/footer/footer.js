@@ -27,7 +27,7 @@ const Footer = () => {
 
   var path = removeAfterSecondSlash(location.pathname);
 
-  const isLeaderboardRoute = path === '/leader_board';
+  const isLeaderboardRoute = path === '/leader_board' || path === '/player';
   return !isLeaderboardRoute && (
     <footer className="footer">
       <nav className="footer-nav">

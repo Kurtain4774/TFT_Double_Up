@@ -65,3 +65,32 @@
   button:hover {
     background-color: rgb(100, 100, 100);
   }
+
+
+
+.footer, #footer{
+  color: white;
+}
+
+.footer-link{
+  color: white;
+  list-style-type: none;
+  display: inline-block;
+  margin: 5px 20px 5px 20px;
+}
+.footer{
+position: relative;
+left: 0;
+bottom: 0;
+
+width: 100%;
+color: white;
+text-align: center;
+}
+
+#footer{
+  font-size: small;
+}
+.footer-nav{
+  text-align: center;
+}
