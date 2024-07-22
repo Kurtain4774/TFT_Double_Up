@@ -1,5 +1,7 @@
 const Bottleneck = require("bottleneck");
-const { connectToMongoDB, insertPlayer, findPlayer } = require('../database/player-db');
+const { connectToMongoDB, insertPlayer, findPlayers } = require('../database/player-db');
+const playerModel = require('../database/schemas/player-schema');
+const matchModel = require('../database/schemas/match-schema');
 
 const limiterPerSecond = new Bottleneck({
   maxConcurrent: 1,
@@ -40,6 +42,15 @@ const getMatches = async (req, res) => {
     
     console.log("PUUID 1: " + puuidArray[0]);
     console.log("PUUID 2: " + puuidArray[1]);
+
+    //insert players into my database
+    const player1 = {
+      username: username1,
+      tag: tag1,
+      puuid: puuidArray[0]
+    }
+
+    insertPlayer(player1);
     
     const matchIDs = await fetchMatchIDs(puuidArray);
     

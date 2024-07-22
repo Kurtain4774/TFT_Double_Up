@@ -1,7 +1,7 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const dotenv = require("dotenv");
 const databaseName = 'doubleUp';
-const collectionName = 'player';
+const collectionName = 'players';
 
 dotenv.config();
 const mongoURI = process.env.DB_STRING;
@@ -22,21 +22,23 @@ async function connectToMongoDB() {
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-      } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
-      }
+      } catch (error) {
+        console.error("Error connecting to MongoDB:", error.message);
+        throw error; // Throw error to handle it elsewhere if needed
+    }
 }
 
-async function insertProduct(playerGames) {
+async function insertPlayer(player) {
     // Insert product logic
     const db = client.db(databaseName);
     const col = db.collection(collectionName);
 
-    const p = await col.insertMany(playerGames);
+    const result = await col.insertOne(player);
+
+    console.log("Insert Done");
 }
 
-async function findProducts() {
+async function findPlayers() {
     // Find products logic
     const db = client.db(databaseName);
     const col = db.collection(collectionName);
@@ -46,18 +48,18 @@ async function findProducts() {
     return JSON.stringify(data);
 }
 
-async function updateProduct(id, updatedFields) {
+async function updatePlayer(id, updatedFields) {
     // Update product logic
 }
 
-async function deleteProduct(id) {
+async function deletePlayer(id) {
     // Delete product logic
 }
 
 module.exports = {
     connectToMongoDB,
-    insertProduct,
-    findProducts,
-    updateProduct,
-    deleteProduct
+    insertPlayer,
+    findPlayers,
+    updatePlayer,
+    deletePlayer
 };
