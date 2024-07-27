@@ -61,13 +61,20 @@ const PlayerPage = () => {
       .then((res) => {
         //console.log(res.ok);
         
-        if(!res.ok){
-          //console.log("no summoner found")
+        if(res.status === 404){
+          const data = res.json().then((data) =>{
+            const { username, tag } = data;
+            console.log("Summoner: " + res.username + " " + res.tag + " was not found. Make sure you have the correct username and tag.");
 
-          navigate("/");
+            //navigate("/");
+          });
+          
+        } else if(!res.ok){
+          console.log("Error: ");
+
+          //navigate("/");
         }
         return res.json();
-        
       })
       .then((data) => {
         //console.log(data);

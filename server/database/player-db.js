@@ -1,4 +1,6 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, TopologyDescription } = require('mongodb');
+const mongoose = require('mongoose');
+const Player = require('./schemas/player-schema');
 const dotenv = require("dotenv");
 const databaseName = 'doubleUp';
 const collectionName = 'players';
@@ -16,50 +18,140 @@ const client = new MongoClient(mongoURI, {
 
 async function connectToMongoDB() {
     // Connect logic
-    try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-      } catch (error) {
-        console.error("Error connecting to MongoDB:", error.message);
-        throw error; // Throw error to handle it elsewhere if needed
-    }
+    await mongoose.connect(mongoURI, {
+    }).then(() => {
+        console.log('Connected to MongoDB');
+    }).catch(err => {
+        console.error('Error connecting to MongoDB:', err.message);
+    });
 }
 
 async function insertPlayer(player) {
     // Insert product logic
-    const db = client.db(databaseName);
-    const col = db.collection(collectionName);
+    //console.log("Inserting player: " + player.username);
+    
+    try {
+        const p = new Player(player);
 
-    const result = await col.insertOne(player);
+        // Save the user to the database
+        await p.save();
+        
+        console.log('User registered successfully,');
+    } catch (error) {
+        // Check if the error is due to duplicate email
 
-    console.log("Insert Done");
+        console.log('Error registering user:', error);
+    }
+
+    
 }
 
-async function findPlayers() {
+async function findPlayers(username, tag) {
     // Find products logic
     const db = client.db(databaseName);
     const col = db.collection(collectionName);
 
-    const data = await col.find();
+    const cursor = await col.findOne({username: username, tag: tag});
 
-    return JSON.stringify(data);
+    return cursor;
 }
 
-async function updatePlayer(id, updatedFields) {
-    // Update product logic
+async function findMatches(puuid1, puuid2) {
+    // Find products logic
+    const db = client.db(databaseName);
+    const col = db.collection(collectionName);
+
+    const player = await Player.aggregate([
+        {
+          $match: {
+            puuid: puuid1  // Replace with the first input puuid
+          }
+        },
+        {
+          $unwind: "$matchIds"
+        },
+        {
+          $match: {
+            "matchIds.teammate": puuid2  // Replace with the second input puuid (teammate)
+          }
+        },
+        {
+            $group: {
+                _id: '$_id',
+                matchIds: { $push: '$matchIds.matchId' }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                matchIds: 1
+            }
+        }
+      ]);
+      //console.log("length: " + player.length);
+      //console.log(player[0].matchIds);
+
+    return player.length > 0 ? player[0] : [];
 }
 
-async function deletePlayer(id) {
-    // Delete product logic
+async function updateTime(username, tag) {
+    // Update the time
+
+    const query = {username: username, tag: tag};
+
+    const newTime = Math.floor(Date.now() / 1000);
+
+    // Update the document with the current time
+    const updateDoc = {
+      $set: {
+        lastUpdated: newTime // Set the `time` field to the current time in seconds
+      }
+    };
+    try{
+        client.db(databaseName).collection(collectionName).updateOne(query, updateDoc);
+        console.log("updated time for: " + username);
+    }catch(error){
+        console.log(error);
+    }
+    
+}
+
+async function updateMatches(username, tag, newMatches) {
+    const query = {username: username, tag: tag};
+
+
+    // Update the document with the current time
+    const updateDoc = {
+      $push: {
+        matchIds: { $each: newMatches } // Set the `time` field to the current time in seconds
+      }
+    };
+    try{
+        //await client.db(databaseName).collection(collectionName).updateOne(query, updateDoc);
+
+        await Player.updateOne(
+            query, // Query to find the document
+            updateDoc
+          );
+      
+          //console.log(result); // Output the result of the update operation
+    } catch(error){
+        console.error('Error updating document:', error);
+    }
+    
+}
+
+async function deletePlayers() {
+    await client.db(databaseName).collection(collectionName).deleteMany({});
+
 }
 
 module.exports = {
     connectToMongoDB,
     insertPlayer,
     findPlayers,
-    updatePlayer,
-    deletePlayer
+    findMatches,
+    updateTime,
+    updateMatches,
+    deletePlayers
 };

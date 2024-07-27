@@ -82,26 +82,38 @@ const DoubleUpPage = () => {
       .then((res) => {
         //console.log(res.ok);
         
-        if(!res.ok){
-          //console.log("no summoner found")
+        if(res.status === 404){
+          return res.json().then((data) => {
+            // Access username and tag from the data object
+            const { username, tag } = data;
+            console.log("Summoner: " + username + " " + tag + " was not found. Make sure you have the correct username and tag.");
+    
+            // Navigate to another page
+            navigate("/");
+
+            return;
+          });
+          
+        } else if(!res.ok){
+          console.log("Error: ");
 
           navigate("/");
+        } else {
+          return res.json();
         }
-        return res.json();
-        
       })
       .then((data) => {
-        setUserInfo1(data[0]);
-        setUserInfo2(data[1]);
+        //setUserInfo1(data[0]);
+        //setUserInfo2(data[1]);
 
-        const totalGames = data.length-3;
+        const totalGames = data.length-1;
     
         let totalPlacement = 0;
         let player1Damage = 0;
         let player2Damage = 0;
         let matchIDs = [];
 
-        for(let i = 2; i < data.length - 1; i++){
+        for(let i = 0; i < data.length - 1; i++){
           let stats = data[i];
           totalPlacement += stats[0];
           player1Damage += stats[1];
@@ -126,6 +138,10 @@ const DoubleUpPage = () => {
 
 
         setSameGameIds(matchIDs);
+      })
+      .catch((error) => {
+        console.error('Fetch error:', error);
+        navigate("/");
       });
       
   }, []);
