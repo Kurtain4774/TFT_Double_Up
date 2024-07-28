@@ -5,23 +5,40 @@ const matchModel = require('../database/schemas/match-schema');
 
 //Bottleneck limiter limits number of requests to 1 per 1200ms or 100 per 2 minutes
 const limiterPerSecond = new Bottleneck({
+  //reservoir helps with bursts of requests
+  reservoir: 100,
+  reservoirRefreshAmount: 100,
+  reservoirRefreshInterval: 120000,
+
   maxConcurrent: 1,
-  minTime: 1200
+  minTime: 1200,
+  
 });
+
+//Function takes in username and tag
+//Returns puuid from RIOT api or null if not found
+async function fetchPuuid(username, tag) {
+  const response = await fetchWithRetry(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username}/${tag}?api_key=${process.env.RIOT_API_KEY}`);
+  const json = await response.json();
+
+  return response.ok ? json.puuid : null;
+}
 
 //returns database information on player that matches a certain username and tag
 async function getPlayerInfo(username, tag){
+  //looks through my database to find the player
   let player = await findPlayers(username,tag);
-
-  let puuid;
-
+  
+  //if the player doesnt exist in my database, we need to find them using riot api and then add them to my database for future reference
   if(!player){
-    puuid = await limiterPerSecond.schedule(() => fetchPuuid(username, tag));
+    //use riots api to find the puuid of the user given username and tag
+    const puuid = await fetchPuuid(username, tag);
     if(!puuid){
       console.log("Riot api did not find user: " + username + " " + tag);
       return null;
     }
-    console.log("Found in riot api");
+
+    //add a player document to my database containing information about the player. 
     player = {
       username: username,
       tag: tag,
@@ -29,240 +46,209 @@ async function getPlayerInfo(username, tag){
       lastUpdated: process.env.SET_START_TIME
     }
     insertPlayer(player);
-
-    return player;
-  } else {
-    console.log("Found in database");
-
-    return player;
   }
+
+  return player;
 }
+
+//function takes in when my database was last updated and a player's puuid
+//queries riot api for all matches played by that player after the given time
+async function fetchMatchIDs(startTime = lastUpdated, puuid) {
+  //we do not want duplicate matches so we use a set
+  const matchIDs = new Set();
+  let start = 0;
+
+  //do have to use this do while loop because riot's api only returns a max of 200 matchIds per query
+  do {
+    const response = await fetchWithRetry(`https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${puuid}/ids?start=${start}&startTime=${startTime}&count=200&api_key=${process.env.RIOT_API_KEY}`);
+    const json = await response.json();
+    if(json){
+      const set = new Set(json);
+
+      //combines the set of matches we just got with the overall set of total match Ids
+      set.forEach(match => matchIDs.add(match));
+    } else {
+      console.log("failed");
+    }
+
+    start += 200;
+  } while (matchIDs.size == start);
+
+  return matchIDs;
+}
+
+//function takes in a riot api url to fetch and attempts to execute the fetch request a few times until it passes the rate limit.
+async function fetchWithRetry(url, retries = 5, delay = 1200) {
+  for (let i = 0; i < retries; i++) {
+      const response = await limiterPerSecond.schedule(() => fetch(url));
+      if (response.status === 429) {
+          console.log("Rate limited, retrying...");
+          //pause the program for a set delay when we face a 429 error. 
+          //This works because we essentially are waiting for riot's api to give us more api calls
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2; // Exponential backoff
+      } else {
+          return response;
+      }
+  }
+  throw new Error('Max retries reached');
+}
+
+//function takes in a list of matchIds and a puuid and returns only the double up matches in that list of matchIds
+async function filterDoubleUpGames(matchIds, puuid) {
+  let doubleUpMatchIDs = [];
+
+  //loop through every single matchId
+  await Promise.all(matchIds.map(async (matchId) => {
+    //fetch the matchId from the riot api
+    const response = await fetchWithRetry(`https://americas.api.riotgames.com/tft/match/v1/matches/${matchId}?api_key=${process.env.RIOT_API_KEY}`);
+    console.log("looking up: " + matchId);
+    
+    const json = await response.json();
+
+    const info = json.info;
+    
+    if (info) {
+      if(info.queue_id === 1160){
+        const participants = info.participants;
+
+        // Find the player data for the given puuid
+        const playerData = participants.find(player => player.puuid === puuid);
+
+        if (playerData) {
+          const team = playerData.partner_group_id;
+
+          // Find the teammate's puuid who is in the same team but not the same player
+          const teammate = participants.find(player => player.partner_group_id === team && player.puuid !== puuid);
+
+          if (teammate) {
+            doubleUpMatchIDs.push({ teammate: teammate.puuid, matchId: matchId });
+          }
+        }
+      }
+    } else {
+      console.log("Error couldn't read json: " + matchId);
+    }
+    
+  }));
+
+  return doubleUpMatchIDs;
+}
+
+//function updates player information in my database
+async function checkPlayer(username, tag){
+  //check if the player currently exists in my database or in the riot database/add them to my database
+  const player = await getPlayerInfo(username, tag);
+
+  //if the player with the tag cannot be found then return an error back to the front end
+  if(player == null){
+    res.status(404).send({username: username, tag: tag});
+    return;
+  }
+
+  //get information about the current player including their puuid and when I last pulled information about them
+  const puuid = player.puuid;
+
+  const lastUpdated = player.lastUpdated;
+
+  //fetch the matchIds of any new matches they have played since my database was last updated.
+  const newMatches = await fetchMatchIDs(lastUpdated, puuid);
+
+  //get the number of new matches
+  //if there is a low number of new matches we can change the limiter settings since we are unlikely to run into api rate limits
+  const totalMatches = newMatches.size;
+
+  if(totalMatches < 90 && await limiterPerSecond.currentReservoir() >= totalMatches){
+    console.log("changed to 50ms");
+    limiterPerSecond.updateSettings({minTime: 50});
+  } else {
+    console.log("changed to 1200ms");
+    limiterPerSecond.updateSettings({minTime: 1200});
+  }
+
+  //filter out any useless games that aren't double up games
+  const newDoubleUpGames = await filterDoubleUpGames(Array.from(newMatches), puuid);
+
+  //update the last updated time in my database
+  updateTime(username,tag);
+
+  //add the new matches into my database for future reference
+  await updateMatches(username,tag,newDoubleUpGames);
+
+  return puuid;
+}
+
+//function gets information on double up games given all the matchIds to look for
+async function fetchGameStats(commonIds, puuidArray) {
+  const stats = [];
+  const placementCounts = [0,0,0,0];
+
+  //go through all the double up game Ids that both players have in common and collect stats on them
+  await Promise.all(commonIds.map(async (matchID) => {
+    const response = await limiterPerSecond.schedule(() => fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/${matchID}?api_key=${process.env.RIOT_API_KEY}`));
+    const json = await response.json();
+
+    const info = json.info;
+    
+    if (info && info.queue_id === 1160) {
+      const participants = info.participants;
+      let player1Data;
+      let player2Data;
+
+      for(let player of participants){
+        if(player.puuid === puuidArray[0]){
+          player1Data = player;
+        } else if(player.puuid === puuidArray[1]){
+          player2Data = player;
+        }
+      }
+      if (player1Data && player2Data && player1Data.partner_group_id === player2Data.partner_group_id) {
+        let gameStats = [];
+        const placement = Math.ceil(player1Data.placement/2);
+        placementCounts[placement-1]++;
+        gameStats.push(placement);
+        gameStats.push(player1Data.total_damage_to_players);
+        gameStats.push(player2Data.total_damage_to_players);
+        gameStats.push(matchID);
+        stats.push(gameStats);
+      }
+    } else {
+      console.log("skipped: " + matchID);
+    }
+  }));
+
+  stats.push(placementCounts);
+  return stats;
+}
+
+//code generates an array of match IDs that two players have in common
 const getMatches = async (req, res) => {
     const username1 = req.query.username;
     const tag1 = req.query.tag;
     const username2 = req.query.username2;
     const tag2 = req.query.tag2;
-    const region = req.query.region;
-
-    //check to see if we already have this player in the database
-    await connectToMongoDB();
-
-    //await deletePlayers();
-
     console.log("Parameters: " + username1 + "#" + tag1 + " " + username2 + "#" + tag2);
 
-    const player1 = await getPlayerInfo(username1, tag1);
+    //connect to mongoDB
+    await connectToMongoDB();
 
-    if(player1 == null){
-      res.status(404).send({username: username1, tag: tag1});
-      return;
-    }
+    //update my database with games and stats of both players
+    const puuid1 = await checkPlayer(username1,tag1);
 
-    const player2 = await getPlayerInfo(username2, tag2);
+    const puuid2 = await checkPlayer(username2, tag2);
 
-    if(player2 == null){
-      res.status(404).send({username: username2, tag: tag2});
-      return;
-    }
 
-    const puuidArray = [player1.puuid, player2.puuid];
-
-    console.log("PUUID 1: " + puuidArray[0]);
-    console.log("PUUID 2: " + puuidArray[1]);
-
-    const lastUpdatedArray = [player1.lastUpdated, player2.lastUpdated];
+    //find the games where both players were teammates
+    const commonIds = await findMatches(puuid1, puuid2);
     
-    let newMatches = await fetchMatchIDs(lastUpdatedArray, puuidArray);
-
-    let totalMatches = newMatches[0].size + newMatches[1].size;
-
-    //console.log("reservoir: " + await limiterPerSecond.currentReservoir() + " " + totalMatches);
-    if(totalMatches < 90 && await limiterPerSecond.currentReservoir() >= 90){
-      console.log("changed to 50ms");
-      limiterPerSecond.updateSettings({minTime: 50});
-    } else {
-      console.log("changed to 1200ms");
-      limiterPerSecond.updateSettings({minTime: 1200});
-    }
-
-    player1newDoubleUpGames = await filterDoubleUpGames(Array.from(newMatches[0]), puuidArray[0]);
-    player2newDoubleUpGames = await filterDoubleUpGames(Array.from(newMatches[1]), puuidArray[1]);
-    
-    updateTime(username1,tag1);
-    updateTime(username2,tag2);
-
-    
-
-    await updateMatches(username1,tag1,player1newDoubleUpGames);
-    await updateMatches(username2,tag2,player2newDoubleUpGames);
-
-    //const commonIds = await findCommonMatchIds(puuidArray[0],puuidArray[1]);
-    //console.log("Common Match IDs: " + commonIds[0]);
-
-    const commonIds = await findCommonMatchIds(puuidArray[0],puuidArray[1]);
-
-    console.log("database match results: " + commonIds.matchIds)
-    
-
+    //collect stats on those games
     //array of stats containing [placement,player1damage,player2damage,matchID]
-    const doubleUpMatchStats = await fetchDoubleUpMatchIDs(commonIds.matchIds, puuidArray);
+    const matchStats = await fetchGameStats(commonIds.matchIds, [puuid1,puuid2]);
 
-    console.log("Total Double Up Games: " + doubleUpMatchStats.length - 1);
-
-    res.send([...doubleUpMatchStats]);
-    
-    //res.status(200).send();
+    //send data to the frontend
+    res.status(200).send([...matchStats]);
     return;
   };
-
-  
-
-  async function fetchPuuid(username, tag) {
-    const response = await fetch(`https://americas.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${username}/${tag}?api_key=${process.env.RIOT_API_KEY}`);
-    const json = await response.json();
-    if (!response.ok) {
-      return null;
-    }
-    return json.puuid;
-  }
-
-  
-
-  async function fetchMatchIDs(lastUpdatedArray, puuidArray) {
-    const matchIDs = [new Set(), new Set()];
-    let start = 0;
-    console.log("TIME START: " + lastUpdatedArray[0]);
-    console.log("TIME START: " + lastUpdatedArray[1]);
-    do {
-      await Promise.all(puuidArray.map(async (id, index) => {
-        const response = await limiterPerSecond.schedule(() => fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/by-puuid/${id}/ids?start=${start}&startTime=${lastUpdatedArray[index]}&count=200&api_key=${process.env.RIOT_API_KEY}`));
-        const json = await response.json();
-        if(json){
-          const set = new Set(json);
-          set.forEach(match => matchIDs[index].add(match));
-        } else {
-          console.log("failed");
-        }
-          
-      }));
-  
-      start += 200;
-      console.log("Match IDs Sizes: " + matchIDs[0].size + " " + matchIDs[1].size + " " + start);
-    } while (matchIDs[0].size == start || matchIDs[1].size == start);
-    return matchIDs;
-  }
-
-  function findCommonMatchIds(puuid1, puuid2) {
-    const matches = findMatches(puuid1, puuid2);
-    return matches;
-  }
-
-  function findCommonMatchIDs(matchIDs) {
-    const set1 = new Set(matchIDs[0]);
-    const set2 = new Set(matchIDs[1]);
-    return [...set1].filter(id => set2.has(id));
-  }
-
-  async function fetchWithRetry(url, retries = 5, delay = 1000) {
-    for (let i = 0; i < retries; i++) {
-        const response = await limiterPerSecond.schedule(() => fetch(url));
-        if (response.status === 429) {
-            console.log("Rate limited, retrying...");
-            await new Promise(resolve => setTimeout(resolve, delay));
-            delay *= 2; // Exponential backoff
-        } else {
-            return response;
-        }
-    }
-    throw new Error('Max retries reached');
-}
-
-
-  async function filterDoubleUpGames(matchIds, puuid) {
-    const doubleUpMatchIDs = [];
-  
-    await Promise.all(matchIds.map(async (matchId) => {
-      const url = `https://americas.api.riotgames.com/tft/match/v1/matches/${matchId}?api_key=${process.env.RIOT_API_KEY}`;
-
-      const response = await fetchWithRetry(url);
-      console.log("looking up: " + matchId);
-      
-      const json = await response.json();
-
-        const info = json.info;
-        
-        if (info) {
-          if(info.queue_id === 1160){
-            const participants = info.participants;
-            let playerData;
-    
-            for(let player of participants){
-              if(player.puuid === puuid){
-                playerData = player;
-              }
-            }
-    
-            let team = playerData.partner_group_id;
-            let teammatePuuid;
-    
-            for(let player of participants){
-              if(player.partner_group_id === team && player.puuid != puuid){
-                teammatePuuid = player.puuid;
-              }
-            }
-            doubleUpMatchIDs.push({teammate: teammatePuuid, matchId: matchId});
-          }
-        } else {
-          console.log("Error couldnt read json: " + matchId);
-        }
-      
-    }));
-
-    return doubleUpMatchIDs;
-  }
-
-  async function fetchDoubleUpMatchIDs(commonIds, puuidArray) {
-    const doubleUpMatchIDs = [];
-    const placementCounts = [0,0,0,0];
-  
-    await Promise.all(commonIds.map(async (matchID) => {
-      const response = await limiterPerSecond.schedule(() => fetch(`https://americas.api.riotgames.com/tft/match/v1/matches/${matchID}?api_key=${process.env.RIOT_API_KEY}`));
-      const json = await response.json();
-
-      const info = json.info;
-      
-      if (info && info.queue_id === 1160) {
-        const participants = info.participants;
-        let player1Data;
-        let player2Data;
-
-        for(let player of participants){
-          if(player.puuid === puuidArray[0]){
-            player1Data = player;
-          } else if(player.puuid === puuidArray[1]){
-            player2Data = player;
-          }
-        }
-        if (player1Data && player2Data && player1Data.partner_group_id === player2Data.partner_group_id) {
-          let stats = [];
-          const placement = Math.ceil(player1Data.placement/2);
-          placementCounts[placement-1]++;
-          stats.push(placement);
-          stats.push(player1Data.total_damage_to_players);
-          stats.push(player2Data.total_damage_to_players);
-          stats.push(matchID);
-          doubleUpMatchIDs.push(stats);
-        }
-      } else {
-        console.log("skipped: " + matchID);
-      }
-    }));
-
-    doubleUpMatchIDs.push(placementCounts);
-    return doubleUpMatchIDs;
-  }
-  
-  
 
   module.exports = {
     getMatches

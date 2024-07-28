@@ -4,7 +4,6 @@ import { Bar } from 'react-chartjs-2';
 import './duPlayer.css';
 
 function getRiotRegion(region) {
-  //console.log(region);
   switch (region) {
     case "BR":
       return "BR1";
