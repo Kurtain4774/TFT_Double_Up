@@ -49,24 +49,13 @@ const DoubleUpPage = () => {
 
   const { region, username, tag, username2, tag2 } = useParams();
 
-  const [userInfo1, setUserInfo1] = useState([]);
-  const [userInfo2, setUserInfo2] = useState([]);
+  const [matches, setMatches] = useState([]);
 
-  const [duoStats, setDuoStats] = useState([]);
-
-  const [sameGameIds, setSameGameIds] = useState([]);
-
-  const [placementCounter, setPlacementCounter] = useState([]);
 
   //the [] executes the code whenever that variable changes so since there is no var inside
   // [] it only executes this code once
   //not adding the [] executes this code on every re-render
   useEffect(() => {
-    console.log("username: " + username);
-    console.log("tag: " + tag);
-    console.log("username: " + username2);
-    console.log("tag: " + tag2);
-
     let t = tag;
     let t2 = tag2;
     if(t === undefined){
@@ -79,7 +68,6 @@ const DoubleUpPage = () => {
     
     fetch("http://localhost:3001/player?username=" + username + "&tag=" + t + "&username2=" + username2 + "&tag2=" + t2 + "&region=" + getRiotRegion(region))
       .then((res) => {
-        //console.log(res.ok);
         
         if(res.status === 404){
           return res.json().then((data) => {
@@ -98,49 +86,18 @@ const DoubleUpPage = () => {
 
           navigate("/");
         } else {
+
           return res.json();
         }
       })
       .then((data) => {
-        //setUserInfo1(data[0]);
-        //setUserInfo2(data[1]);
-
-        const totalGames = data.length-1;
-    
-        let totalPlacement = 0;
-        let player1Damage = 0;
-        let player2Damage = 0;
-        let matchIDs = [];
-
-        for(let i = 0; i < data.length - 1; i++){
-          let stats = data[i];
-          totalPlacement += stats[0];
-          player1Damage += stats[1];
-          player2Damage += stats[2];
-          matchIDs.push(stats[3]);
-        }
-
-        totalPlacement /= totalGames;
-        player1Damage /= totalGames;
-        player2Damage /= totalGames;
-
+        console.log(data);
         
-
-        let duoStats = [];
-        duoStats.push({label: "Total Games", value: totalGames});
-        duoStats.push({label: "Avg Place", value: totalPlacement});
-        duoStats.push({label: username + " Avg. Damage", value: player1Damage});
-        duoStats.push({label: username2 + " Avg. Games", value: player2Damage});
-
-        setDuoStats(duoStats);
-        setPlacementCounter(data[data.length - 1]);
-
-
-        setSameGameIds(matchIDs);
+        setMatches(data);
       })
       .catch((error) => {
         console.error('Fetch error:', error);
-        navigate("/");
+        //navigate("/");
       });
       
   }, []);
@@ -148,38 +105,30 @@ const DoubleUpPage = () => {
 
   return (
     <div>
-      <h1>Double Up Page</h1>
-      <div className="container">
-        <div className="stats-box">
-          {duoStats.map((stat, index) => (
-            <div key={index} className="stat">
-              <div className="label">{stat.label}</div>
-              <div className="value">{stat.value}</div>
-            </div>
+      <h1>Match List</h1>
+      {matches.length === 0 ? (
+        <p>Loading matches...</p>
+      ) : (
+        <ul>
+          {matches.map((match) => (
+            <li key={match.metadata.match_id}>
+              <h2>Match ID: {match.metadata.match_id}</h2>
+              <p>Game Version: {match.info.game_version}</p>
+              <p>Game Length: {match.info.game_length}</p>
+              <p>Participants:</p>
+              <ul>
+                {match.info.participants.map((participant, index) => (
+                  <li key={index}>
+                    <p>PUUID: {participant.puuid}</p>
+                    <p>Placement: {participant.placement}</p>
+                    {/* Add more participant details as needed */}
+                  </li>
+                ))}
+              </ul>
+            </li>
           ))}
-        </div>
-        
-        <div className="table-box">
-          <table>
-            <thead>
-              <tr>
-                <th>Index</th>
-                <th>Match ID</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sameGameIds.map((item) => (
-                <tr key={item}>
-                  <td></td>
-                  <td>{item}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      
+        </ul>
+      )}
     </div>
   );
 };

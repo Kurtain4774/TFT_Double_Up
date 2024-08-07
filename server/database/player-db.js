@@ -1,6 +1,7 @@
 const { MongoClient, ServerApiVersion, TopologyDescription } = require('mongodb');
 const mongoose = require('mongoose');
 const Player = require('./schemas/player-schema');
+const Match = require('./schemas/match-schema');
 const dotenv = require("dotenv");
 
 //constants
@@ -43,10 +44,21 @@ async function insertPlayer(player) {
         
         console.log('User registered successfully,');
     } catch (error) {
-        console.log('Error adding player to database:', error);
+        console.log('Error adding player to database:',error);
     }
+}
 
-    
+//add a match into my database
+async function insertMatch(match){
+  try{
+    const m = new Match(match);
+
+    await m.save();
+
+    console.log('Match added successfully,');
+  } catch(error){
+    console.log('Error adding match to database:');
+  }
 }
 
 //function finds a player that matches the given username and tag
@@ -56,10 +68,33 @@ async function findPlayers(username, tag) {
 
     const cursor = await col.findOne({username: username, tag: tag});
 
+    
     return cursor;
 }
 
-async function findMatches(puuid1, puuid2) {
+async function findPlayerNoTag(username){
+  const db = client.db(databaseName);
+    const col = db.collection(collectionName);
+
+    const cursor = await col.findOne({username: username});
+
+    
+    return cursor;
+}
+
+//function finds the match in my database that matches the matchId
+async function findMatch(matchId){
+  const db = client.db(databaseName);
+  const col = db.collection("matches");
+
+  const cursor = await col.findOne({'metadata.match_id':matchId}, {projection: {_id: 0, __v: 0}});
+
+  //console.log(cursor);
+
+  return cursor;
+}
+
+async function findCommonMatches(puuid1, puuid2) {
     // Find products logic
     const db = client.db(databaseName);
     const col = db.collection(collectionName);
@@ -96,6 +131,9 @@ async function findMatches(puuid1, puuid2) {
             }
         }
       ]);
+
+      //console.log(player.length);
+      //console.log(player);
     
     //return empty array if no games were found
     return player.length > 0 ? player[0] : [];
@@ -122,7 +160,6 @@ async function updateTime(username, tag) {
     }catch(error){
         console.log(error);
     }
-    
 }
 
 //adds new matches into a player in my database
@@ -152,13 +189,26 @@ async function deletePlayers() {
   await client.db(databaseName).collection(collectionName).deleteMany({});
 }
 
+async function clearGames(){
+  const newTime = Math.floor(process.env.SET_START_TIME);
+
+  await client.db(databaseName).collection(collectionName).updateMany(
+    {},
+    { $set: { matchIds: [], lastUpdated: newTime}}
+  )
+}
+
 //export these functions so they can be used in other javascript files
 module.exports = {
   connectToMongoDB,
   insertPlayer,
+  insertMatch,
   findPlayers,
-  findMatches,
+  findPlayerNoTag,
+  findMatch,
+  findCommonMatches,
   updateTime,
   updateMatches,
+  clearGames,
   deletePlayers
 };

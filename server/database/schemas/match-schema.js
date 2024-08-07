@@ -1,17 +1,5 @@
 const mongoose = require("mongoose");
 
-const puuidSchema = mongoose.Schema({
-  puuid: { type: String, required: true, unique: true },
-});
-
-const augmentSchema = mongoose.Schema({
-  name: { type: String, required: true, unique: false },
-});
-
-const itemSchema = mongoose.Schema({
-  id: { type: Number, required: true, unique: false },
-});
-
 const companionSchema = mongoose.Schema({
   content_ID: { type: String, required: true, unique: false },
   item_ID: { type: Number, required: true, unique: false },
@@ -28,7 +16,7 @@ const traitSchema = mongoose.Schema({
 });
 
 const unitSchema = mongoose.Schema({
-  items: [itemSchema],
+  items: [String],
   character_id: { type: String, required: true, unique: false },
   chosen: { type: String, required: false, unique: false },
   name: { type: String, required: false, unique: false },
@@ -96,7 +84,7 @@ const missionSchema = mongoose.Schema({
 });
 
 const participantSchema = mongoose.Schema({
-  augments: [augmentSchema],
+  augments: [String],
   companion: { type: companionSchema, required: true, unique: false },
   gold_left: { type: Number, required: true, unique: false },
   last_round: { type: Number, required: true, unique: false },
@@ -105,7 +93,7 @@ const participantSchema = mongoose.Schema({
   level: { type: Number, required: true, unique: false },
   placement: { type: Number, required: true, unique: false },
   players_eliminated: { type: Number, required: true, unique: false },
-  puuid: { type: String, required: true, unique: true },
+  puuid: { type: String, required: true, unique: false },
   time_eliminated: { type: Number, required: true, unique: false },
   total_damage_to_players: { type: Number, required: true, unique: false },
   traits: [traitSchema],
@@ -115,7 +103,7 @@ const participantSchema = mongoose.Schema({
 const metadataSchema = mongoose.Schema({
   data_version: { type: String, required: true, unique: false },
   match_id: { type: String, required: true, unique: true },
-  participants: [puuidSchema],
+  participants: [String],
 });
 
 const infoSchema = mongoose.Schema({
@@ -136,10 +124,10 @@ const infoSchema = mongoose.Schema({
 });
 
 const matchSchema = mongoose.Schema({
-  metadata: { type: metadataSchema, required: true, unique: true },
+  metadata: { type: metadataSchema, required: true, unique: false },
   info: { type: infoSchema, required: true, unique: false },
 });
 
-const Match = mongoose.model("Match", matchSchema);
+const Match = mongoose.model("matches", matchSchema);
 
 module.exports = Match;
