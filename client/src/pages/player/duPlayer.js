@@ -109,7 +109,8 @@ const DoubleUpPage = () => {
       {matches.length === 0 ? (
         <p>Loading matches...</p>
       ) : (
-        <ul>
+        <table>
+          <tr>
           {matches.map((match) => (
             <li key={match.metadata.match_id}>
               <h2>Match ID: {match.metadata.match_id}</h2>
@@ -127,7 +128,8 @@ const DoubleUpPage = () => {
               </ul>
             </li>
           ))}
-        </ul>
+          </tr>
+        </table>
       )}
     </div>
   );

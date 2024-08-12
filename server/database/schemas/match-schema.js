@@ -94,6 +94,8 @@ const participantSchema = mongoose.Schema({
   placement: { type: Number, required: true, unique: false },
   players_eliminated: { type: Number, required: true, unique: false },
   puuid: { type: String, required: true, unique: false },
+  username: { type: String, required: true, unique: false },
+  tag: { type: String, required: true, unique: false },
   time_eliminated: { type: Number, required: true, unique: false },
   total_damage_to_players: { type: Number, required: true, unique: false },
   traits: [traitSchema],

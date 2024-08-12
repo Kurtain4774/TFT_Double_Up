@@ -57,7 +57,7 @@ async function insertMatch(match){
 
     console.log('Match added successfully,');
   } catch(error){
-    console.log('Error adding match to database:');
+    console.log('Error adding match to database:', error);
   }
 }
 
@@ -66,10 +66,22 @@ async function findPlayers(username, tag) {
     const db = client.db(databaseName);
     const col = db.collection(collectionName);
 
-    const cursor = await col.findOne({username: username, tag: tag});
+    console.log("looking for : " + username + " " + tag);
 
-    
+    const cursor = await col.findOne({username: username.toLowerCase(), tag: tag.toLowerCase()});
+
     return cursor;
+}
+
+async function findPlayersByPuuid(puuid) {
+  const db = client.db(databaseName);
+  const col = db.collection(collectionName);
+
+  const cursor = await col.findOne({puuid: puuid});
+
+  //console.log(cursor);
+  
+  return cursor;
 }
 
 async function findPlayerNoTag(username){
@@ -94,10 +106,8 @@ async function findMatch(matchId){
   return cursor;
 }
 
+
 async function findCommonMatches(puuid1, puuid2) {
-    // Find products logic
-    const db = client.db(databaseName);
-    const col = db.collection(collectionName);
 
     //find the player that matches the puuid
     //then open the matchIds array into a table/document
@@ -139,10 +149,10 @@ async function findCommonMatches(puuid1, puuid2) {
     return player.length > 0 ? player[0] : [];
 }
 
-async function updateTime(username, tag) {
+async function updateTime(puuid) {
     // Update the time
     //find the right player
-    const query = {username: username, tag: tag};
+    const query = {puuid: puuid};
 
     //gets the current unix timestamp time in seconds
     const newTime = Math.floor(Date.now() / 1000);
@@ -170,11 +180,33 @@ async function updateMatches(username, tag, newMatches) {
   // Update the document by pushing the new matches to the end of an array
   const updateDoc = {
     $push: {
-      matchIds: { $each: newMatches } //each separates the games adding them one by one rather than pushing the entire array as one object entity to the end of the array
+      matchIds: newMatches //each separates the games adding them one by one rather than pushing the entire array as one object entity to the end of the array
     }
   };
 
   try{
+    await Player.updateOne(
+      query, // Query to find the document
+      updateDoc
+    );      
+  } catch(error){
+      console.error('Error updating document:', error);
+  }
+}
+
+//adds new matches into a player in my database
+async function updateMatchesByPuuid(puuid, newMatches) {
+  //query finds the right player to update
+  const query = {puuid: puuid};
+
+  // Update the document by pushing the new matches to the end of an array
+  const updateDoc = {
+    $push: {
+      matchIds: { matchId: newMatches.matchId, teammate: newMatches.teammate } //each separates the games adding them one by one rather than pushing the entire array as one object entity to the end of the array
+    }
+  };
+
+  try {
     await Player.updateOne(
       query, // Query to find the document
       updateDoc
@@ -204,11 +236,13 @@ module.exports = {
   insertPlayer,
   insertMatch,
   findPlayers,
+  findPlayersByPuuid,
   findPlayerNoTag,
   findMatch,
   findCommonMatches,
   updateTime,
   updateMatches,
+  updateMatchesByPuuid,
   clearGames,
   deletePlayers
 };
