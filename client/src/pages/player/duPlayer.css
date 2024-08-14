@@ -1,72 +1,49 @@
+body {
+  margin: 0;
+  background-color: rgb(33, 32, 32);
+  color: #ffffff;
+}
+
+.page-row{
+  display: flex;
+}
+
+.page-column{
+  padding: 10px;
+}
+
+h2 {
+  text-align: center;
+}
+
+.statistic-container{
+  display: flex;
+  flex-direction: column;
+}
+
+.statistic-row{
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.statistic-label{
+  text-align: left;
+}
+
+.statistic-value{
+  text-align: right;
+}
 
 
-  body {
-    margin: 0;
-    background-color: rgb(33, 32, 32);
-    color: #ffffff;
-  }
-  
-  .container {
-    display: flex;
-    height: 100vh;
-  }
-  
-  .stats-box {
-    width: 20%;
-    height: 50vh;
-    padding: 10px;
-    background-color: rgb(50, 50, 50);
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .stat {
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: rgb(75, 75, 75);
-    border: 1px solid rgb(100, 100, 100);
-  }
-  
-  .label {
-    font-weight: bold;
-  }
-  
-  .table-box {
-    width: 80%;
-    padding: 10px;
-    background-color: rgb(33, 32, 32);
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: rgb(50, 50, 50);
-    color: #ffffff;
-  }
-  
-  table, th, td {
-    border: 1px solid rgb(100, 100, 100);
-  }
-  
-  th, td {
-    padding: 8px;
-    text-align: left;
-  }
-  
-  button {
-    padding: 10px;
-    margin-top: 10px;
-    background-color: rgb(75, 75, 75);
-    color: #ffffff;
-    border: 1px solid rgb(100, 100, 100);
-    cursor: pointer;
-  }
-  
-  button:hover {
-    background-color: rgb(100, 100, 100);
-  }
 
+.page-left {
+  flex: 25%;
+}
 
+.page-right {
+  flex: 75%;
+}
 
 .footer, #footer{
   color: white;

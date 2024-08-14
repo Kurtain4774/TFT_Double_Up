@@ -12,7 +12,7 @@ const limiterPerSecond = new Bottleneck({
 
   reservoir: 100, // initial value
   reservoirRefreshAmount: 100,
-  reservoirRefreshInterval: 60 * 1000 * 2, // must be divisible by 250
+  reservoirRefreshInterval: 140000, // must be divisible by 250
 });
 
 
@@ -174,7 +174,7 @@ async function filterDoubleUpGames(matchIds) {
           const player = participants[i];
           const puuid = player.puuid;
 
-          const playerInfo = await database.getPlayerInfoByPuuid(puuid);
+          const playerInfo = await getPlayerInfoByPuuid(puuid);
 
           participants[i].username = playerInfo.username;
           participants[i].tag = playerInfo.tag;
@@ -333,7 +333,7 @@ const getMatches = async (req, res) => {
       const matchStats = await fetchGameStats(commonIds.matchIds);
 
       //console.log(matchStats);
-      res.status(200).send([...matchStats]);
+      res.status(200).send([puuids,matchStats]);
     } else {
       //deal with having no games in common later
       res.status(200).send("");

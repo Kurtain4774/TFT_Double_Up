@@ -106,6 +106,21 @@ async function findMatch(matchId){
   return cursor;
 }
 
+async function updateMatchList(puuid, matchId, league, tier = 0, points){
+  const result = await collection.updateOne(
+    { puuid: puuid, 'matchIds.matchId': matchId }, // Filter
+    { 
+        $set: { 
+            'matchIds.$.league': league, 
+            'matchIds.$.tier': tier, 
+            'matchIds.$.points': points 
+        } 
+    } // Update
+  );
+
+
+}
+
 
 async function findCommonMatches(puuid1, puuid2) {
 

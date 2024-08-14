@@ -42,6 +42,10 @@ function getRiotRegion(region) {
   }
 }
 
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 const DoubleUpPage = () => {
 
   
@@ -51,6 +55,17 @@ const DoubleUpPage = () => {
 
   const [matches, setMatches] = useState([]);
 
+  const [playerPuuids, setPlayerPuuids] = useState([]);
+
+  const [duoStats, setDuoStats] = useState();
+
+  const playerRow = (puuid) => {
+    return (
+      <div>
+
+      </div>
+    );
+  }
 
   //the [] executes the code whenever that variable changes so since there is no var inside
   // [] it only executes this code once
@@ -92,8 +107,137 @@ const DoubleUpPage = () => {
       })
       .then((data) => {
         console.log(data);
+        setMatches(data[1]);
+        setPlayerPuuids(data[0]);
+
+        let gamesPlayed = 0;
+        let avgPlacement = 0;
+        let winRate = 0;
+        let topFourRate = 0;
+        let lpGained = 0;
+        let player1Damage = 0;
+        let player2Damage = 0;
+        let avgRoundDead = 0;
+        let player1AvgBoardCost = 0;
+        let player2AvgBoardCost = 0;
+        let totalAvgTeamDamage = 0;
+        let player1AverageLevel = 0;
+        let player2AverageLevel = 0;
+        let placementArray = [];
+        let damageArray = [[],[]];
+        let teamCostArray = [[],[]];
+
         
-        setMatches(data);
+
+        gamesPlayed = data[1].length;
+
+        console.log("Games played: " + gamesPlayed);
+
+        for(let i = 0; i < data[1].length; i++){
+          let match = data[1][i];
+          let player1 = match.info.participants.find(participant => participant.puuid === data[0][0]);
+          let player2 = match.info.participants.find(participant => participant.puuid === data[0][1])
+          const placement = Math.ceil(player1.placement/2);
+          placementArray.push(placement);
+          avgPlacement += placement;
+          if(placement === 1){
+            winRate++;
+          }
+          if(placement <= 2){
+            topFourRate++;
+          }
+
+          damageArray[0].push(player1.total_damage_to_players);
+          damageArray[1].push(player2.total_damage_to_players);
+
+
+          player1Damage += player1.total_damage_to_players;
+
+          player2Damage += player2.total_damage_to_players;
+
+          avgRoundDead += player1.last_round;
+
+          let boardCost = 0;
+
+          for(let j = 0; j < player1.units.length; j++){
+            let unitCost = player1.units[j].rarity;
+
+            if(unitCost == 4){
+              unitCost = 3;
+            } else if(unitCost == 6){
+              unitCost = 4;
+            }
+            unitCost++;
+            unitCost = unitCost * (3 ** (player1.units[j].tier-1));
+            boardCost += unitCost;
+          }
+
+          teamCostArray[0].push(boardCost);
+
+          player1AvgBoardCost += boardCost;
+
+          boardCost = 0;
+
+          for(let j = 0; j < player2.units.length; j++){
+            let unitCost = player2.units[j].rarity;
+
+            if(unitCost == 4){
+              unitCost = 3;
+            } else if(unitCost == 6){
+              unitCost = 4;
+            }
+            unitCost++;
+            unitCost = unitCost * (3 ** (player2.units[j].tier-1));
+            boardCost += unitCost;
+          }
+
+          player2AvgBoardCost += boardCost;
+          teamCostArray[1].push(boardCost);
+
+          player1AverageLevel += player1.level;
+          player2AverageLevel += player2.level;
+
+
+        }
+        avgPlacement = (avgPlacement/gamesPlayed*100/100).toFixed(2);
+        winRate = (winRate / gamesPlayed * 100).toFixed(0) + "%";
+        topFourRate = (topFourRate / gamesPlayed * 100).toFixed(0) + "%";
+
+        player1AverageLevel = (player1AverageLevel/gamesPlayed).toFixed(2);
+        player2AverageLevel = (player2AverageLevel/gamesPlayed).toFixed(2);
+
+        player1AvgBoardCost = (player1AvgBoardCost/gamesPlayed).toFixed(1);
+        player2AvgBoardCost = (player2AvgBoardCost/gamesPlayed).toFixed(1);
+
+        player1Damage = (player1Damage/gamesPlayed).toFixed(0);
+        player2Damage = (player2Damage/gamesPlayed).toFixed(0);
+
+        totalAvgTeamDamage = +player1Damage + +player2Damage;
+
+        avgRoundDead = (avgRoundDead/gamesPlayed).toFixed(0);
+
+        
+        const stats = new Map([
+          ["Games", gamesPlayed],
+          ["Place", avgPlacement],
+          ["Win", winRate],
+          ["Top 4", topFourRate],
+          ["Avg. Eliminated", avgRoundDead],
+          [capitalizeFirstLetter(username + " Avg. Damage"), player1Damage],
+          [capitalizeFirstLetter(username2 + " Avg. Damage"), player2Damage],
+          ["Avg. Team Damage", totalAvgTeamDamage],
+          [capitalizeFirstLetter(username + " Avg. lvl"), player1AverageLevel],
+          [capitalizeFirstLetter(username2 + " Avg. lvl"), player2AverageLevel],
+          [capitalizeFirstLetter(username + " Avg. Team Cost"), player1AvgBoardCost],
+          [capitalizeFirstLetter(username2 + " Avg. Team Cost"), player2AvgBoardCost],
+        ]);
+        
+        console.log(stats);
+
+        setDuoStats(stats);
+
+        console.log(duoStats);
+
       })
       .catch((error) => {
         console.error('Fetch error:', error);
@@ -104,32 +248,53 @@ const DoubleUpPage = () => {
   
 
   return (
-    <div>
+    <div className="player-container">
       <h1>Match List</h1>
-      {matches.length === 0 ? (
+      {!duoStats ? (
         <p>Loading matches...</p>
       ) : (
-        <table>
-          <tr>
-          {matches.map((match) => (
-            <li key={match.metadata.match_id}>
-              <h2>Match ID: {match.metadata.match_id}</h2>
-              <p>Game Version: {match.info.game_version}</p>
-              <p>Game Length: {match.info.game_length}</p>
-              <p>Participants:</p>
-              <ul>
-                {match.info.participants.map((participant, index) => (
-                  <li key={index}>
-                    <p>PUUID: {participant.puuid}</p>
-                    <p>Placement: {participant.placement}</p>
-                    {/* Add more participant details as needed */}
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-          </tr>
-        </table>
+        <div className="page-row">
+          <div className="page-column page-left">
+            <h2>Stats</h2>
+            <div className="statistic-container">
+              {[...duoStats.entries()].map(([key, value]) => (
+                <div className="statistic-row">
+                  <div className="statistic-label"> {key} </div>
+                  <div className="statistic-value"> {value} </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="page-column page-right">
+          <h1>Duo Stats</h1>
+              <table>
+              <tbody>
+                
+              {matches.map((match) => (
+                <tr>
+                  
+                  <div>
+                    <div>
+                      {Math.ceil(match.info.participants.find(participant => participant.puuid === playerPuuids[0]).placement/2)}
+                    </div>
+                    <div>
+                      <div>
+                        {playerRow(playerPuuids[0])}
+                      </div>
+                      <div>
+                        {playerRow(playerPuuids[1])}
+                      </div>
+                    </div>
+                  </div>
+                </tr>
+                
+              ))}
+
+            </tbody>
+            </table>
+          </div>
+
+        </div>
       )}
     </div>
   );
