@@ -5,14 +5,16 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
+  overflow-x: hidden;
 
 }
 
  html{
   height: 100%;
   width: 100%;
+  font-size: 100%;
   background-color: rgb(33, 32, 32);
   color: white;
 }

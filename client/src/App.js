@@ -10,7 +10,9 @@ const App = () => (
       <div className="row-header">
         <NavBar />
       </div>
-      
+
+      <hr></hr>
+
       <div className="row-content">
         <Routes>
           {routes.map((route) => (

@@ -1,19 +1,23 @@
-body {
-  margin: 0;
-  background-color: rgb(33, 32, 32);
-  color: #ffffff;
+.loading{
+
 }
 
 .page-row{
   display: flex;
 }
 
+
 .page-column{
   padding: 10px;
 }
 
-h2 {
+h1 {
   text-align: center;
+  padding: 1rem;
+}
+
+.stat-header-container{
+  height: 4rem;
 }
 
 .statistic-container{
@@ -38,11 +42,11 @@ h2 {
 
 
 .page-left {
-  flex: 25%;
+  width: 25%;
 }
 
 .page-right {
-  flex: 75%;
+  width: 75%;
 }
 
 .footer, #footer{

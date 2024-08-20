@@ -1,7 +1,5 @@
 import React from "react";
 import "./homepage.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,7 +7,7 @@ const regions = [
   "BR","EUNE","EUW","JP","KR","LAN","LAS","NA","OCE","PH","RU","SG","TH","TR","TW","VN",
 ];
 
-const tables = ["Augments", "Reroll", "Double Up", "Golden Egg"];
+//const tables = ["Augments", "Reroll", "Double Up", "Golden Egg"];
 
 
 const HomePage = () => {
@@ -18,14 +16,17 @@ const HomePage = () => {
   const [region, setRegion] = useState(regions[7])
   const [username, setUsername] = useState("");
   const [username2, setUsername2] = useState("");
+  const [errors, setErrors] = useState({});
 
-  const handleClick = () => {
+
+  const handleClick = (e) => {
+    e.preventDefault();
     nav();
   }
 
   function nav(){
-    console.log(username);
-    console.log(username2);
+    
+
 
     let path = "/player/" + region.toUpperCase() + "/";
 
@@ -45,8 +46,24 @@ const HomePage = () => {
       path = path + name2[0] + "/" + name2[1] + "/";
     }
 
+    const error = {};
 
-    navigate(path);
+    if(name1[0].length === 0){
+      error.player1 = "Field cannot be left blank"
+    }
+
+    if(name2[0].length === 0){
+      error.player2 = "Field cannot be left blank"
+    } else if(name1[0].toLowerCase() === name2[0].toLowerCase() && name1[1].toLowerCase() === name2[1].toLowerCase()){
+      error.player2 = "Players must be different"
+    }
+
+    setErrors(error);
+
+    if(errors){
+      navigate(path);
+    }
+
   
   }
 
@@ -80,16 +97,22 @@ const HomePage = () => {
     <div className="page">
       <div className="container">
         <div className="search-container">
-          <select onChange = {regionChange} value={region} className="region-select">
-            {regions.map((region) => (
-              <option key={region} value={region}>
-                {region}
-              </option>
-            ))}
-          </select>
           <form>
-            <input type="text" className="text-input" placeholder="Search a RiotID #Tagline" onKeyDown = {handleKeyPress} onChange={usernameChange} value={username}  />
-            <input type="text" className="text-input" placeholder="Double up teammate RiotID #Tagline" onKeyDown = {handleKeyPress2} onChange={usernameChange2} value={username2}  />
+            <select onChange = {regionChange} value={region} className="region-select">
+              {regions.map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+              ))}
+            </select>
+            <div className="text-input-container">
+              {errors.player1 && <p className="error">{errors.player1}</p>}
+              <input type="text" className={errors.player1 ? "text-input error-input" : "text-input"} placeholder="Player 1 RiotID #Tagline" onKeyDown = {handleKeyPress} onChange={usernameChange} value={username}  />
+            </div>
+            <div className="text-input-container">
+              {errors.player2 && <p className="error">{errors.player2}</p>}
+              <input type="text" className={errors.player2 ? "text-input error-input" : "text-input"} placeholder="Player 2 RiotID #Tagline" onKeyDown = {handleKeyPress2} onChange={usernameChange2} value={username2}  />
+            </div>
             <input type="submit" className="text-submit" onClick = {handleClick}/>
           </form>
           

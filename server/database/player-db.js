@@ -194,7 +194,7 @@ async function updateMatches(username, tag, newMatches) {
 
   // Update the document by pushing the new matches to the end of an array
   const updateDoc = {
-    $push: {
+    $addToSet: {
       matchIds: newMatches //each separates the games adding them one by one rather than pushing the entire array as one object entity to the end of the array
     }
   };

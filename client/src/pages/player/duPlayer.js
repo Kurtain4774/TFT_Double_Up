@@ -1,50 +1,9 @@
 import React, {useState, useEffect } from "react";
-import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { Bar } from 'react-chartjs-2';
+import { useNavigate, useParams } from "react-router-dom";
 import './duPlayer.css';
+import BarGraph from "./bargraph";
+import { getRiotRegion, capitalizeFirstLetter } from "./tools";
 
-function getRiotRegion(region) {
-  switch (region) {
-    case "BR":
-      return "BR1";
-    case "NA":
-      return "NA1";
-    case "LAN":
-      return "LA1";
-    case "LAS":
-      return "LA2";
-    case "EUNE":
-      return "EUN1";
-    case "EUW":
-      return "EUW1";
-    case "KR":
-      return "KR";
-    case "JP":
-      return "JP1";
-    case "TR":
-      return "TR1";
-    case "RU":
-      return "RU";
-    case "OCE":
-      return "OC1";
-    case "SG":
-      return "SG2";
-    case "TH":
-      return "TH2";
-    case "TW":
-      return "TW2";
-    case "VN":
-      return "VN2";
-    case "PH":
-      return "PH2";
-    default:
-      return "";
-  }
-}
-
-function capitalizeFirstLetter(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
 
 const DoubleUpPage = () => {
 
@@ -58,6 +17,10 @@ const DoubleUpPage = () => {
   const [playerPuuids, setPlayerPuuids] = useState([]);
 
   const [duoStats, setDuoStats] = useState();
+
+  const [placementCounter, setPlacementCounter] = useState([]);
+
+  const labels = ['1','2','3','4'];
 
   const playerRow = (puuid) => {
     return (
@@ -114,7 +77,7 @@ const DoubleUpPage = () => {
         let avgPlacement = 0;
         let winRate = 0;
         let topFourRate = 0;
-        let lpGained = 0;
+        //let lpGained = 0;
         let player1Damage = 0;
         let player2Damage = 0;
         let avgRoundDead = 0;
@@ -126,6 +89,7 @@ const DoubleUpPage = () => {
         let placementArray = [];
         let damageArray = [[],[]];
         let teamCostArray = [[],[]];
+        let placementCounter = [0,0,0,0];
 
         
 
@@ -140,6 +104,8 @@ const DoubleUpPage = () => {
           const placement = Math.ceil(player1.placement/2);
           placementArray.push(placement);
           avgPlacement += placement;
+
+          placementCounter[placement-1]++;
           if(placement === 1){
             winRate++;
           }
@@ -162,9 +128,9 @@ const DoubleUpPage = () => {
           for(let j = 0; j < player1.units.length; j++){
             let unitCost = player1.units[j].rarity;
 
-            if(unitCost == 4){
+            if(unitCost === 4){
               unitCost = 3;
-            } else if(unitCost == 6){
+            } else if(unitCost === 6){
               unitCost = 4;
             }
             unitCost++;
@@ -181,9 +147,9 @@ const DoubleUpPage = () => {
           for(let j = 0; j < player2.units.length; j++){
             let unitCost = player2.units[j].rarity;
 
-            if(unitCost == 4){
+            if(unitCost === 4){
               unitCost = 3;
-            } else if(unitCost == 6){
+            } else if(unitCost === 6){
               unitCost = 4;
             }
             unitCost++;
@@ -232,30 +198,29 @@ const DoubleUpPage = () => {
           [capitalizeFirstLetter(username2 + " Avg. Team Cost"), player2AvgBoardCost],
         ]);
         
-        console.log(stats);
+        setPlacementCounter(placementCounter);
 
         setDuoStats(stats);
-
-        console.log(duoStats);
-
       })
       .catch((error) => {
         console.error('Fetch error:', error);
-        //navigate("/");
+        navigate("/");
       });
       
-  }, []);
+  }, [navigate, region, tag, tag2, username, username2]);
   
 
   return (
     <div className="player-container">
-      <h1>Match List</h1>
       {!duoStats ? (
-        <p>Loading matches...</p>
+        <p className="loading">Loading matches...</p>
       ) : (
         <div className="page-row">
           <div className="page-column page-left">
-            <h2>Stats</h2>
+            <div className="stat-header-container">
+              <h1>Stats</h1>
+            </div>
+            
             <div className="statistic-container">
               {[...duoStats.entries()].map(([key, value]) => (
                 <div className="statistic-row">
@@ -264,9 +229,13 @@ const DoubleUpPage = () => {
                 </div>
               ))}
             </div>
+            
+            <div className="bargraph-container">
+              {BarGraph(labels,placementCounter)}
+            </div>
           </div>
+
           <div className="page-column page-right">
-          <h1>Duo Stats</h1>
               <table>
               <tbody>
                 
@@ -276,6 +245,8 @@ const DoubleUpPage = () => {
                   <div>
                     <div>
                       {Math.ceil(match.info.participants.find(participant => participant.puuid === playerPuuids[0]).placement/2)}
+                      <br></br>
+                      {match.info.gameId}
                     </div>
                     <div>
                       <div>

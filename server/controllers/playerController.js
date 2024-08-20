@@ -253,12 +253,27 @@ async function checkPlayers(username1, tag1, username2, tag2){
 
 //function gets information on double up games given all the matchIds to look for
 async function fetchGameStats(commonIds) {
-  const stats = [];
+  let stats = [];
   
   for(let matchId of commonIds){
     const match = await database.findMatch(matchId);
 
-    stats.push(match)
+    const id = match.info.gameId;
+
+    let index = 0;
+
+    for(let i = 0; i < stats.length; i++){
+      if(stats[i].info.gameId < id){
+        break;
+      }
+      index++;
+    }
+
+    stats = [
+      ...stats.slice(0,index),
+      match,
+      ...stats.slice(index)
+    ];
   }
   console.log("Num games: " + stats.length);
 
